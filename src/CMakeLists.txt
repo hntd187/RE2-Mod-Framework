@@ -67,7 +67,6 @@ set(UTILITY_SRC
     utility/Scan.cpp
     utility/String.hpp
     utility/String.cpp
-    utility/droid-font.cpp
 )
 
 set(FRAMEWORK_SRC
