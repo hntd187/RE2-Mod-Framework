@@ -1,6 +1,7 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include <thread>
 #include <chrono>
-#include <windows.h>
+#include <Windows.h>
 
 #include "REFramework.hpp"
 
@@ -32,7 +33,7 @@ void startupThread() {
     wchar_t buffer[MAX_PATH]{ 0 };
     if (GetSystemDirectoryW(buffer, MAX_PATH) != 0) {
         // Load the original dinput8.dll
-        if ((g_dinput = LoadLibraryW((std::wstring{ buffer } + L"\\dinput8.dll").c_str())) == NULL) {
+        if ((g_dinput = LoadLibraryW((std::wstring{ buffer } + L"\\dinput8.dll").c_str())) == nullptr) {
             failed();
         }
 

@@ -1,3 +1,4 @@
+#include <spdlog/spdlog.h>
 #include <spdlog/sinks/basic_file_sink.h>
 
 #include <imgui/imgui.h>
@@ -37,9 +38,7 @@ REFramework::REFramework()
     }
 }
 
-REFramework::~REFramework() {
-
-}
+REFramework::~REFramework() = default;
 
 void REFramework::onFrame() {
     spdlog::debug("OnFrame");
@@ -154,7 +153,7 @@ void REFramework::drawUI() {
     ImGui::GetIO().MouseDrawCursor = true;
 
     ImGui::SetNextWindowPos(ImVec2(50, 50), ImGuiCond_::ImGuiCond_Once);
-    ImGui::SetNextWindowSize(ImVec2(300, 500), ImGuiCond_::ImGuiCond_Once);
+    ImGui::SetNextWindowSize(ImVec2(500, 700), ImGuiCond_::ImGuiCond_Once);
 
     ImGui::Begin("REFramework", &m_drawUI);
     ImGui::Text("Menu Key: Insert");
@@ -258,9 +257,7 @@ bool REFramework::initialize() {
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-
     spdlog::info("Initializing ImGui Win32");
-
     if (!ImGui_ImplWin32_Init(m_wnd)) {
         spdlog::error("Failed to initialize ImGui.");
         return false;
@@ -272,6 +269,14 @@ bool REFramework::initialize() {
         spdlog::error("Failed to initialize ImGui.");
         return false;
     }
+
+    ImGuiIO& io = ImGui::GetIO();
+    spdlog::info("Got ImGui IO");
+    ImFont* font = io.Fonts->AddFontFromFileTTF(R"(DroidSans.ttf)", 18.0);
+    if(font == nullptr) {
+        spdlog::error("Failed to load Droid Sans.");
+    }
+    spdlog::info("Loaded Droid Sans font");
 
     ImGui::StyleColorsDark();
 

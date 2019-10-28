@@ -20,6 +20,8 @@ set(MODS_SRC
     ManualFlashlight.cpp
     ObjectExplorer.hpp
     ObjectExplorer.cpp
+	Speedrun.h
+	Speedrun.cpp
 )
 
 set(SDK_SRC
@@ -42,6 +44,8 @@ set(RE2IMGUI_SRC
     re2-imgui/imgui_impl_win32.cpp
     re2-imgui/imgui_impl_dx11.h
     re2-imgui/imgui_impl_dx11.cpp
+	re2-imgui/imgui_color_gradient.h
+	re2-imgui/imgui_color_gradient.cpp
 )
 
 set(UTILITY_SRC
@@ -63,6 +67,7 @@ set(UTILITY_SRC
     utility/Scan.cpp
     utility/String.hpp
     utility/String.cpp
+    utility/droid-font.cpp
 )
 
 set(FRAMEWORK_SRC
@@ -73,7 +78,7 @@ set(FRAMEWORK_SRC
     REFramework.cpp
 )
 
-source_group("re2-imgui", FILES ${RE2IMGUI_SRC})
+source_group("re2-imgui" FILES ${RE2IMGUI_SRC})
 source_group("Hooks" FILES ${HOOKS_SRC})
 source_group("Mods" FILES ${MODS_SRC})
 source_group("SDK" FILES ${SDK_SRC})
@@ -92,15 +97,15 @@ add_library(RE2 SHARED
 )
 
 target_link_libraries(RE2 PUBLIC imgui minhook d3d11 glm_static shlwapi)
-target_compile_options(RE2 PUBLIC /GS- /GR-)
+target_compile_options(RE2 PUBLIC /GS /GR)
 target_compile_features(RE2 PUBLIC cxx_std_17)
 
 include_directories(RE2 ${CMAKE_CURRENT_SOURCE_DIR})
 set_target_properties(RE2 PROPERTIES OUTPUT_NAME dinput8)
 
-option(DEVELOPER_MODE "Adds DeveloperTools option to menu" OFF)
+option(DEVELOPER_MODE "Adds DeveloperTools option to menu" ON)
 
 if(DEVELOPER_MODE)
 target_compile_definitions(RE2 PUBLIC DEVELOPER)
-target_compile_options(RE2 PUBLIC /EHa)
+target_compile_options(RE2 PUBLIC /EHs)
 endif()
