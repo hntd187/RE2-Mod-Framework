@@ -4,37 +4,42 @@
 
 namespace utility::REArray {
     // Forward declarations
-    static bool hasInlineElements(::REArrayBase* container);
+    static bool hasInlineElements(::REArrayBase *container);
 
-    template<typename T> static T* getInlineElement(::REArrayBase* container, int idx);
-    template<typename T> static T* getPtrElement(::REArrayBase* container, int idx);
-    template<typename T> static T* getElement(::REArrayBase* container, int idx);
+    template<typename T>
+    static T *getInlineElement(::REArrayBase *container, int idx);
 
-    static bool hasInlineElements(::REArrayBase* container) {
+    template<typename T>
+    static T *getPtrElement(::REArrayBase *container, int idx);
+
+    template<typename T>
+    static T *getElement(::REArrayBase *container, int idx);
+
+    static bool hasInlineElements(::REArrayBase *container) {
         if (container->containedType == nullptr) {
             return false;
         }
 
-        return container->containedType->objectType == (uint8_t)via::clr::VMObjType::ValType;
+        return container->containedType->objectType == (uint8_t) via::clr::VMObjType::ValType;
     }
 
     template<typename T>
-    static T* getInlineElement(::REArrayBase* container, int idx) {
-        if (idx < 0 || idx >= container->numElements) {
-            return nullptr;
-        }             
-
-        auto data = Address{ REManagedObject::getFieldPtr(container) };
-        return data.get(container->info->classInfo->elementSize * idx).as<T*>();
-    }
-
-    template<typename T>
-    static T* getPtrElement(::REArrayBase* container, int idx) {
+    static T *getInlineElement(::REArrayBase *container, int idx) {
         if (idx < 0 || idx >= container->numElements) {
             return nullptr;
         }
 
-        T** data = (T**)REManagedObject::getFieldPtr(container);
+        auto data = Address{REManagedObject::getFieldPtr(container)};
+        return data.get(container->info->classInfo->elementSize * idx).as<T *>();
+    }
+
+    template<typename T>
+    static T *getPtrElement(::REArrayBase *container, int idx) {
+        if (idx < 0 || idx >= container->numElements) {
+            return nullptr;
+        }
+
+        T **data = (T **) REManagedObject::getFieldPtr(container);
         return data[idx];
     }
 

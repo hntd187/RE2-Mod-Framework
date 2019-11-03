@@ -30,7 +30,7 @@ private:
 
     bool widgetWithContext(void* address, std::function<bool()> widget);
     void contextMenu(void* address);
-    void makeSameLineText(std::string_view text, const ImVec4& color);
+    static void makeSameLineText(std::string_view text, const ImVec4& color);
 
     void makeTreeOffset(REManagedObject* object, uint32_t offset, std::string_view name);
     bool isManagedObject(Address address) const;

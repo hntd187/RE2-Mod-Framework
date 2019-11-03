@@ -67,6 +67,7 @@ set(UTILITY_SRC
     utility/Scan.cpp
     utility/String.hpp
     utility/String.cpp
+	utility/DroidFont.cpp
 )
 
 set(FRAMEWORK_SRC
@@ -95,16 +96,19 @@ add_library(RE2 SHARED
             ${FRAMEWORK_SRC}
 )
 
+set(CMAKE_BUILD_TYPE Release)
 target_link_libraries(RE2 PUBLIC imgui minhook d3d11 glm_static shlwapi)
 target_compile_options(RE2 PUBLIC /GS /GR)
 target_compile_features(RE2 PUBLIC cxx_std_17)
+SET(STATIC_LIBRARY_OPTIONS "${STATIC_LIBRARY_OPTIONS} /NODEFAULTLIB:library")
 
 include_directories(RE2 ${CMAKE_CURRENT_SOURCE_DIR})
 set_target_properties(RE2 PROPERTIES OUTPUT_NAME dinput8)
+string(REGEX REPLACE "/MD" "/MT" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
 
-option(DEVELOPER_MODE "Adds DeveloperTools option to menu" ON)
+option(DEVELOPER_MODE "Adds DeveloperTools option to menu" OFF)
 
 if(DEVELOPER_MODE)
 target_compile_definitions(RE2 PUBLIC DEVELOPER)
-target_compile_options(RE2 PUBLIC /EHs)
+target_compile_options(RE2 PUBLIC /EHa)
 endif()

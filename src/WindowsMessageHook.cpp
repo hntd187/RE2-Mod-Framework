@@ -1,6 +1,3 @@
-#include <unordered_map>
-#include <vector>
-
 #include <spdlog/spdlog.h>
 
 #include "WindowsMessageHook.hpp"

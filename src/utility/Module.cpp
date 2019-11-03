@@ -1,4 +1,4 @@
-#include <shlwapi.h>
+#include <Shlwapi.h>
 
 #include "String.hpp"
 #include "Module.hpp"

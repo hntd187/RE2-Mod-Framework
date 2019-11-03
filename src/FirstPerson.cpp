@@ -55,8 +55,9 @@ void FirstPerson::onFrame() {
     }
 
     // Update our global pointers
-    if (m_cameraSystem == nullptr || m_cameraSystem->ownerGameObject == nullptr || m_sweetLightManager == nullptr || m_sweetLightManager->ownerGameObject == nullptr) {
-        auto& globals = *g_framework->getGlobals();
+    if (m_cameraSystem == nullptr || m_cameraSystem->ownerGameObject == nullptr || m_sweetLightManager == nullptr ||
+        m_sweetLightManager->ownerGameObject == nullptr) {
+        auto &globals = *g_framework->getGlobals();
         m_sweetLightManager = globals.get<RopewaySweetLightManager>("app.ropeway.SweetLightManager");
         m_cameraSystem = globals.get<RopewayCameraSystem>("app.ropeway.camera.CameraSystem");
 
@@ -72,7 +73,7 @@ void FirstPerson::onDrawUI() {
         return;
     }
 
-    std::lock_guard _{ m_frameMutex };
+    std::lock_guard _{m_frameMutex};
 
     if (m_enabled->draw("Enabled") && !m_enabled->value()) {
         // Disable fov and camera light changes
@@ -91,7 +92,7 @@ void FirstPerson::onDrawUI() {
 
     m_toggleKey->draw("Change Toggle Key");
 
-    ImGui::SliderFloat3("CameraOffset", (float*)&m_attachOffsets[m_playerName], -2.0f, 2.0f, "%.3f", 1.0f);
+    ImGui::SliderFloat3("CameraOffset", (float *) &m_attachOffsets[m_playerName], -2.0f, 2.0f, "%.3f", 1.0f);
 
     m_cameraScale->draw("CameraSpeed");
     m_boneScale->draw("CameraShake");
@@ -111,20 +112,21 @@ void FirstPerson::onDrawUI() {
     }
 
     if (ImGui::InputText("Joint", m_attachBoneImgui.data(), 256)) {
-        m_attachBone = std::wstring{ std::begin(m_attachBoneImgui), std::end(m_attachBoneImgui) };
+        m_attachBone = std::wstring{std::begin(m_attachBoneImgui), std::end(m_attachBoneImgui)};
     }
 
-    static auto listBoxHandler = [](void* data, int idx, const char** outText) -> bool {
+    static auto listBoxHandler = [](void *data, int idx, const char **outText) -> bool {
         return g_firstPerson->listBoxHandlerAttach(data, idx, outText);
     };
 
-    if (ImGui::ListBox("Joints", &m_attachSelected, listBoxHandler, &m_attachNames, (int32_t)m_attachNames.size())) {
+    if (ImGui::ListBox("Joints", &m_attachSelected, listBoxHandler, &m_attachNames, (int32_t) m_attachNames.size())) {
         m_attachBoneImgui = m_attachNames[m_attachSelected];
-        m_attachBone = std::wstring{ std::begin(m_attachNames[m_attachSelected]), std::end(m_attachNames[m_attachSelected]) };
+        m_attachBone = std::wstring{std::begin(m_attachNames[m_attachSelected]),
+                                    std::end(m_attachNames[m_attachSelected])};
     }
 }
 
-void FirstPerson::onConfigLoad(const utility::Config& cfg) {
+void FirstPerson::onConfigLoad(const utility::Config &cfg) {
     // maybe add a way to just push them once into a list of mod variables.
     m_enabled->configLoad(cfg);
     m_toggleKey->configLoad(cfg);
@@ -133,7 +135,7 @@ void FirstPerson::onConfigLoad(const utility::Config& cfg) {
     m_disableLightSource->configLoad(cfg);
     m_fovOffset->configLoad(cfg);
     m_fovMult->configLoad(cfg);
-    
+
     m_cameraScale->configLoad(cfg);
     m_boneScale->configLoad(cfg);
 
@@ -145,7 +147,7 @@ void FirstPerson::onConfigLoad(const utility::Config& cfg) {
     }
 }
 
-void FirstPerson::onConfigSave(utility::Config& cfg) {
+void FirstPerson::onConfigSave(utility::Config &cfg) {
     m_enabled->configSave(cfg);
     m_toggleKey->configSave(cfg);
     m_hideMesh->configSave(cfg);
@@ -161,12 +163,13 @@ void FirstPerson::onConfigSave(utility::Config& cfg) {
 thread_local bool g_inPlayerTransform = false;
 thread_local bool g_firstTime = true;
 
-void FirstPerson::onPreUpdateTransform(RETransform* transform) {
+void FirstPerson::onPreUpdateTransform(RETransform *transform) {
     if (!m_enabled->value() || m_camera == nullptr || m_camera->ownerGameObject == nullptr) {
         return;
     }
 
-    if (m_playerCameraController == nullptr || m_playerTransform == nullptr || m_cameraSystem == nullptr || m_cameraSystem->cameraController == nullptr) {
+    if (m_playerCameraController == nullptr || m_playerTransform == nullptr || m_cameraSystem == nullptr ||
+        m_cameraSystem->cameraController == nullptr) {
         return;
     }
 
@@ -182,15 +185,15 @@ void FirstPerson::onPreUpdateTransform(RETransform* transform) {
         g_firstTime = true;
         m_matrixMutex.lock();
     }
-    // This is because UpdateTransform recursively calls UpdateTransform on its children,
-    // and the player transform (topmost) is the one that actually updates the bone matrix,
-    // and all the child transforms operate on the bones that it updated
+        // This is because UpdateTransform recursively calls UpdateTransform on its children,
+        // and the player transform (topmost) is the one that actually updates the bone matrix,
+        // and all the child transforms operate on the bones that it updated
     else if (g_inPlayerTransform) {
         updatePlayerBones(m_playerTransform);
     }
 }
 
-void FirstPerson::onUpdateTransform(RETransform* transform) {
+void FirstPerson::onUpdateTransform(RETransform *transform) {
     // Do this first before anything else.
     if (g_inPlayerTransform && transform == m_playerTransform) {
         updateJointNames();
@@ -203,7 +206,8 @@ void FirstPerson::onUpdateTransform(RETransform* transform) {
         return;
     }
 
-    if (m_cameraSystem != nullptr && m_cameraSystem->ownerGameObject != nullptr && transform == m_cameraSystem->ownerGameObject->transform) {
+    if (m_cameraSystem != nullptr && m_cameraSystem->ownerGameObject != nullptr &&
+        transform == m_cameraSystem->ownerGameObject->transform) {
         if (!updatePointersFromCameraSystem(m_cameraSystem)) {
             reset();
             return;
@@ -218,7 +222,8 @@ void FirstPerson::onUpdateTransform(RETransform* transform) {
         return;
     }
 
-    if (m_playerCameraController == nullptr || m_playerTransform == nullptr || m_cameraSystem == nullptr || m_cameraSystem->cameraController == nullptr) {
+    if (m_playerCameraController == nullptr || m_playerTransform == nullptr || m_cameraSystem == nullptr ||
+        m_cameraSystem->cameraController == nullptr) {
         return;
     }
 
@@ -240,20 +245,20 @@ void FirstPerson::onUpdateTransform(RETransform* transform) {
     }
 }
 
-void FirstPerson::onUpdateCameraController(RopewayPlayerCameraController* controller) {
+void FirstPerson::onUpdateCameraController(RopewayPlayerCameraController *controller) {
     if (!m_enabled->value() || controller != m_playerCameraController || m_playerTransform == nullptr) {
         return;
     }
 
     // The following code fixes inaccuracies between the rotation set by the game and what's set in updateCameraTransform
     controller->worldPosition = m_lastCameraMatrix[3];
-    *(glm::quat*)&controller->worldRotation = glm::quat{ m_lastCameraMatrix };
+    *(glm::quat *) &controller->worldRotation = glm::quat{m_lastCameraMatrix};
 
     m_camera->ownerGameObject->transform->worldTransform = m_lastCameraMatrix;
-    m_camera->ownerGameObject->transform->angles = *(Vector4f*)&controller->worldRotation;
+    m_camera->ownerGameObject->transform->angles = *(Vector4f *) &controller->worldRotation;
 }
 
-void FirstPerson::onUpdateCameraController2(RopewayPlayerCameraController* controller) {
+void FirstPerson::onUpdateCameraController2(RopewayPlayerCameraController *controller) {
     if (!m_enabled->value() || controller != m_playerCameraController || m_playerTransform == nullptr) {
         return;
     }
@@ -264,7 +269,7 @@ void FirstPerson::onUpdateCameraController2(RopewayPlayerCameraController* contr
     // Save the original position and rotation before our modifications.
     // If we don't, the camera rotation will freeze up, because it keeps getting overwritten.
     m_lastControllerPos = controller->worldPosition;
-    m_lastControllerRotation = *(glm::quat*)&controller->worldRotation;
+    m_lastControllerRotation = *(glm::quat *) &controller->worldRotation;
 }
 
 void FirstPerson::reset() {
@@ -275,11 +280,11 @@ void FirstPerson::reset() {
     m_lastControllerPos = Vector4f{};
     m_lastControllerRotation = glm::quat{};
 
-    std::lock_guard _{ m_frameMutex };
+    std::lock_guard _{m_frameMutex};
     m_attachNames.clear();
 }
 
-bool FirstPerson::updatePointersFromCameraSystem(RopewayCameraSystem* cameraSystem) {
+bool FirstPerson::updatePointersFromCameraSystem(RopewayCameraSystem *cameraSystem) {
     if (cameraSystem == nullptr) {
         return false;
     }
@@ -290,7 +295,7 @@ bool FirstPerson::updatePointersFromCameraSystem(RopewayCameraSystem* cameraSyst
     }
 
     auto joint = cameraSystem->playerJoint;
-    
+
     if (joint == nullptr) {
         m_playerTransform = nullptr;
         return false;
@@ -308,7 +313,7 @@ bool FirstPerson::updatePointersFromCameraSystem(RopewayCameraSystem* cameraSyst
             return false;
         }
 
-        spdlog::info("Found Player {:s} {:p}", m_playerName.data(), (void*)joint->parentTransform);
+        spdlog::info("Found Player {:s} {:p}", m_playerName.data(), (void *) joint->parentTransform);
     }
 
     // Update player transform pointer
@@ -320,13 +325,14 @@ bool FirstPerson::updatePointersFromCameraSystem(RopewayCameraSystem* cameraSyst
     if (m_playerCameraController == nullptr) {
         auto controller = cameraSystem->cameraController;
 
-        if (controller == nullptr || controller->ownerGameObject == nullptr || controller->activeCamera == nullptr || controller->activeCamera->ownerGameObject == nullptr) {
+        if (controller == nullptr || controller->ownerGameObject == nullptr || controller->activeCamera == nullptr ||
+            controller->activeCamera->ownerGameObject == nullptr) {
             return false;
         }
 
         if (utility::REString::equals(controller->activeCamera->ownerGameObject->name, L"PlayerCameraController")) {
             m_playerCameraController = controller;
-            spdlog::info("Found PlayerCameraController {:p}", (void*)m_playerCameraController);
+            spdlog::info("Found PlayerCameraController {:p}", (void *) m_playerCameraController);
         }
 
         return m_playerCameraController != nullptr;
@@ -335,65 +341,69 @@ bool FirstPerson::updatePointersFromCameraSystem(RopewayCameraSystem* cameraSyst
     return true;
 }
 
-void FirstPerson::updateCameraTransform(RETransform* transform) {
-    std::lock_guard _{ m_matrixMutex };
+void FirstPerson::updateCameraTransform(RETransform *transform) {
+    std::lock_guard _{m_matrixMutex};
 
     auto deltaTime = updateDeltaTime(transform);
 
-    auto& mtx = transform->worldTransform;
-    auto& cameraPos = mtx[3];
+    auto &mtx = transform->worldTransform;
+    auto &cameraPos = mtx[3];
 
-    auto camPos3 = Vector3f{ m_lastControllerPos };
+    auto camPos3 = Vector3f{m_lastControllerPos};
 
     auto boneMatrix = m_lastCameraMatrix * Matrix4x4f{
-        -1, 0, 0, 0,
-        0, 1, 0, 0,
-        0, 0, -1, 0,
-        0, 0, 0, 1
+            -1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, -1, 0,
+            0, 0, 0, 1
     };
 
     boneMatrix[3] = m_lastBoneMatrix[3];
-    auto& bonePos = boneMatrix[3];
+    auto &bonePos = boneMatrix[3];
 
-    auto camRotMat = glm::extractMatrixRotation(Matrix4x4f{ m_lastControllerRotation });
+    auto camRotMat = glm::extractMatrixRotation(Matrix4x4f{m_lastControllerRotation});
     auto headRotMat = glm::extractMatrixRotation(m_lastBoneMatrix);
 
-    auto& camForward3 = *(Vector3f*)&camRotMat[2];
+    auto &camForward3 = *(Vector3f *) &camRotMat[2];
 
-    auto offset = glm::extractMatrixRotation(boneMatrix) * (m_attachOffsets[m_playerName] * Vector4f{ -0.1f, 0.1f, 0.1f, 0.0f });
-    auto finalPos = Vector3f{ bonePos + offset };
+    auto offset = glm::extractMatrixRotation(boneMatrix) *
+                  (m_attachOffsets[m_playerName] * Vector4f{-0.1f, 0.1f, 0.1f, 0.0f});
+    auto finalPos = Vector3f{bonePos + offset};
 
     // Average the distance to the wanted rotation
     auto dist = (glm::distance(m_interpolatedBone[0], headRotMat[0])
-               + glm::distance(m_interpolatedBone[1], headRotMat[1])
-               + glm::distance(m_interpolatedBone[2], headRotMat[2])) / 3.0f;
+                 + glm::distance(m_interpolatedBone[1], headRotMat[1])
+                 + glm::distance(m_interpolatedBone[2], headRotMat[2])) / 3.0f;
 
     // interpolate the bone rotation (it's snappy otherwise)
-    m_interpolatedBone = glm::interpolate(m_interpolatedBone, headRotMat, deltaTime * (m_boneScale->value() * 0.01f) * dist);
+    m_interpolatedBone = glm::interpolate(m_interpolatedBone, headRotMat,
+                                          deltaTime * (m_boneScale->value() * 0.01f) * dist);
 
     // Look at where the camera is pointing from the head position
-    camRotMat = glm::extractMatrixRotation(glm::rowMajor4(glm::lookAtLH(finalPos, camPos3 + (camForward3 * 8192.0f), { 0.0f, 1.0f, 0.0f })));
+    camRotMat = glm::extractMatrixRotation(
+            glm::rowMajor4(glm::lookAtLH(finalPos, camPos3 + (camForward3 * 8192.0f), {0.0f, 1.0f, 0.0f})));
     // Follow the bone rotation, but rotate towards where the camera is looking.
     auto wantedMat = glm::inverse(m_interpolatedBone) * camRotMat;
 
     // Average the distance to the wanted rotation
     dist = (glm::distance(m_rotationOffset[0], wantedMat[0])
-          + glm::distance(m_rotationOffset[1], wantedMat[1])
-          + glm::distance(m_rotationOffset[2], wantedMat[2])) / 3.0f;
+            + glm::distance(m_rotationOffset[1], wantedMat[1])
+            + glm::distance(m_rotationOffset[2], wantedMat[2])) / 3.0f;
 
-    m_rotationOffset = glm::interpolate(m_rotationOffset, wantedMat, deltaTime * (m_cameraScale->value() * 0.01f) * dist);
+    m_rotationOffset = glm::interpolate(m_rotationOffset, wantedMat,
+                                        deltaTime * (m_cameraScale->value() * 0.01f) * dist);
     auto finalMat = m_interpolatedBone * m_rotationOffset;
-    auto finalQuat = glm::quat{ finalMat };
+    auto finalQuat = glm::quat{finalMat};
 
     // Apply the same matrix data to other things stored in-game (positions/quaternions)
-    cameraPos = Vector4f{ finalPos, 1.0f };
-    m_cameraSystem->cameraController->worldPosition = *(Vector4f*)&cameraPos;
-    m_cameraSystem->cameraController->worldRotation = *(Vector4f*)&finalQuat;
-    transform->position = *(Vector4f*)&cameraPos;
-    transform->angles = *(Vector4f*)&finalQuat;
+    cameraPos = Vector4f{finalPos, 1.0f};
+    m_cameraSystem->cameraController->worldPosition = *(Vector4f *) &cameraPos;
+    m_cameraSystem->cameraController->worldRotation = *(Vector4f *) &finalQuat;
+    transform->position = *(Vector4f *) &cameraPos;
+    transform->angles = *(Vector4f *) &finalQuat;
 
     // Apply the new matrix
-    *(Matrix3x4f*)&mtx = finalMat;
+    *(Matrix3x4f *) &mtx = finalMat;
     m_lastCameraMatrix = mtx;
 
     if (transform->joints.size >= 1 && transform->joints.matrices != nullptr) {
@@ -401,7 +411,7 @@ void FirstPerson::updateCameraTransform(RETransform* transform) {
     }
 }
 
-void FirstPerson::updateSweetLightContext(RopewaySweetLightManagerContext* ctx) {
+void FirstPerson::updateSweetLightContext(RopewaySweetLightManagerContext *ctx) {
     if (ctx->controller == nullptr || ctx->controller->ownerGameObject == nullptr) {
         return;
     }
@@ -413,43 +423,43 @@ void FirstPerson::updateSweetLightContext(RopewaySweetLightManagerContext* ctx) 
                                                      m_cameraSystem->cameraController == m_playerCameraController);
 }
 
-void FirstPerson::updatePlayerBones(RETransform* transform) {
-    auto& boneMatrix = utility::RETransform::getJointMatrix(*m_playerTransform, m_attachBone);
-    
+void FirstPerson::updatePlayerBones(RETransform *transform) {
+    auto &boneMatrix = utility::RETransform::getJointMatrix(*m_playerTransform, m_attachBone);
+
     if (g_firstTime) {
         m_lastBoneMatrix = boneMatrix;
         g_firstTime = false;
     }
 
     auto wantedMat = m_lastCameraMatrix * Matrix4x4f{
-        -1, 0, 0, 0,
-        0, 1, 0, 0,
-        0, 0, -1, 0,
-        0, 0, 0, 1
+            -1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, -1, 0,
+            0, 0, 0, 1
     };
 
-    *(Matrix3x4f*)&boneMatrix = wantedMat;
+    *(Matrix3x4f *) &boneMatrix = wantedMat;
 
     // Hide the head model by moving it out of view of the camera (and hopefully shadows...)
     if (m_hideMesh->value()) {
-        boneMatrix[0] = Vector4f{ 0.0f, 0.0f, 0.0f, 0.0f };
-        boneMatrix[1] = Vector4f{ 0.0f, 0.0f, 0.0f, 0.0f };
-        boneMatrix[2] = Vector4f{ 0.0f, 0.0f, 0.0f, 0.0f };
+        boneMatrix[0] = Vector4f{0.0f, 0.0f, 0.0f, 0.0f};
+        boneMatrix[1] = Vector4f{0.0f, 0.0f, 0.0f, 0.0f};
+        boneMatrix[2] = Vector4f{0.0f, 0.0f, 0.0f, 0.0f};
     }
 }
 
-void FirstPerson::updateFOV(RopewayPlayerCameraController* controller) {
+void FirstPerson::updateFOV(RopewayPlayerCameraController *controller) {
     if (controller == nullptr) {
         return;
     }
 
     auto isActiveCamera = m_cameraSystem != nullptr
-        && m_cameraSystem->cameraController != nullptr
-        && m_cameraSystem->cameraController->cameraParam != nullptr
-        && m_cameraSystem->cameraController == m_playerCameraController;
+                          && m_cameraSystem->cameraController != nullptr
+                          && m_cameraSystem->cameraController->cameraParam != nullptr
+                          && m_cameraSystem->cameraController == m_playerCameraController;
 
-    if (!isActiveCamera) { 
-        return; 
+    if (!isActiveCamera) {
+        return;
     }
 
     if (auto param = controller->cameraParam; param != nullptr) {
@@ -461,11 +471,10 @@ void FirstPerson::updateFOV(RopewayPlayerCameraController* controller) {
 
             m_fovOffset->value() += delta;
             m_playerCameraController->activeCamera->fov = (param->fov * m_fovMult->value()) + m_fovOffset->value();
-        }
-        else {
+        } else {
             m_playerCameraController->activeCamera->fov = newValue;
         }
-        
+
         // Causes the camera to ignore the FOV inside the param
         param->useParam = !m_enabled->value();
     }
@@ -476,7 +485,7 @@ void FirstPerson::updateJointNames() {
         return;
     }
 
-    auto& joints = m_playerTransform->joints;
+    auto &joints = m_playerTransform->joints;
 
     for (int32_t i = 0; joints.data != nullptr && i < joints.size; ++i) {
         auto joint = joints.data->joints[i];
@@ -485,12 +494,12 @@ void FirstPerson::updateJointNames() {
             continue;
         }
 
-        auto name = std::wstring{ joint->info->name };
-        m_attachNames.push_back(std::string{ std::begin(name), std::end(name) }.c_str());
+        auto name = std::wstring{joint->info->name};
+        m_attachNames.push_back(std::string{std::begin(name), std::end(name)}.c_str());
     }
 }
 
-float FirstPerson::updateDeltaTime(REComponent* component) {
+float FirstPerson::updateDeltaTime(REComponent *component) {
     return utility::REComponent::getDeltaTime(component);
 }
 

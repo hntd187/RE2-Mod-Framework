@@ -8,6 +8,7 @@
 #include "re2-imgui/imgui_impl_dx11.h"
 
 #include "utility/Module.hpp"
+#include "utility/DroidFont.cpp"
 
 #include "sdk/REGlobals.hpp"
 #include "Mods.hpp"
@@ -18,9 +19,8 @@
 std::unique_ptr<REFramework> g_framework{};
 
 REFramework::REFramework()
-    : m_logger{ spdlog::basic_logger_mt("REFramework", "re2_framework_log.txt", true) },
-    m_gameModule{ GetModuleHandle(0) }
-{
+        : m_logger{spdlog::basic_logger_mt("REFramework", "re2_framework_log.txt", true)},
+          m_gameModule{GetModuleHandle(0)} {
     spdlog::set_default_logger(m_logger);
     spdlog::flush_on(spdlog::level::info);
     spdlog::info("REFramework entry");
@@ -30,8 +30,8 @@ REFramework::REFramework()
 #endif
 
     m_d3d11Hook = std::make_unique<D3D11Hook>();
-    m_d3d11Hook->onPresent([this](D3D11Hook& hook) { onFrame(); });
-    m_d3d11Hook->onResizeBuffers([this](D3D11Hook& hook) { onReset(); });
+    m_d3d11Hook->onPresent([this](D3D11Hook &hook) { onFrame(); });
+    m_d3d11Hook->onResizeBuffers([this](D3D11Hook &hook) { onReset(); });
 
     if (m_valid = m_d3d11Hook->hook()) {
         spdlog::info("Hooked D3D11");
@@ -67,7 +67,7 @@ void REFramework::onFrame() {
     ImGui::EndFrame();
     ImGui::Render();
 
-    ID3D11DeviceContext* context = nullptr;
+    ID3D11DeviceContext *context = nullptr;
     m_d3d11Hook->getDevice()->GetImmediateContext(&context);
 
     context->OMSetRenderTargets(1, &m_mainRenderTargetView, NULL);
@@ -90,7 +90,7 @@ bool REFramework::onMessage(HWND wnd, UINT message, WPARAM wParam, LPARAM lParam
 
     if (m_drawUI && ImGui_ImplWin32_WndProcHandler(wnd, message, wParam, lParam) != 0) {
         // If the user is interacting with the UI we block the message from going to the game.
-        auto& io = ImGui::GetIO();
+        auto &io = ImGui::GetIO();
 
         if (io.WantCaptureMouse || io.WantCaptureKeyboard || io.WantTextInput) {
             return false;
@@ -101,9 +101,9 @@ bool REFramework::onMessage(HWND wnd, UINT message, WPARAM wParam, LPARAM lParam
 }
 
 // this is unfortunate.
-void REFramework::onDirectInputKeys(const std::array<uint8_t, 256>& keys) {
+void REFramework::onDirectInputKeys(const std::array<uint8_t, 256> &keys) {
     if (keys[m_menuKey] && m_lastKeys[m_menuKey] == 0) {
-        std::lock_guard _{ m_inputMutex };
+        std::lock_guard _{m_inputMutex};
         m_drawUI = !m_drawUI;
 
         // Save the config if we close the UI
@@ -120,7 +120,7 @@ void REFramework::saveConfig() {
 
     utility::Config cfg{};
 
-    for (auto& mod : m_mods->getMods()) {
+    for (auto &mod : m_mods->getMods()) {
         mod->onConfigSave(cfg);
     }
 
@@ -133,7 +133,7 @@ void REFramework::saveConfig() {
 }
 
 void REFramework::drawUI() {
-    std::lock_guard _{ m_inputMutex };
+    std::lock_guard _{m_inputMutex};
 
     if (!m_drawUI) {
         m_dinputHook->acknowledgeInput();
@@ -141,12 +141,11 @@ void REFramework::drawUI() {
         return;
     }
 
-    auto& io = ImGui::GetIO();
+    auto &io = ImGui::GetIO();
 
     if (io.WantCaptureKeyboard) {
         m_dinputHook->ignoreInput();
-    }
-    else {
+    } else {
         m_dinputHook->acknowledgeInput();
     }
 
@@ -162,11 +161,9 @@ void REFramework::drawUI() {
 
     if (m_error.empty() && m_gameDataInitialized) {
         m_mods->onDrawUI();
-    }
-    else if (!m_gameDataInitialized) {
+    } else if (!m_gameDataInitialized) {
         ImGui::TextWrapped("REFramework is currently initializing...");
-    }
-    else if(!m_error.empty()) {
+    } else if (!m_error.empty()) {
         ImGui::TextWrapped("REFramework error: %s", m_error.c_str());
     }
 
@@ -179,33 +176,17 @@ void REFramework::drawAbout() {
     }
 
     ImGui::TreePush("About");
-
     ImGui::Text("Author: praydog");
     ImGui::Text("Inspired by the Kanan project.");
     ImGui::Text("https://github.com/praydog/RE2-Mod-Framework");
-
     if (ImGui::CollapsingHeader("Licenses")) {
         ImGui::TreePush("Licenses");
-
-        if (ImGui::CollapsingHeader("glm")) {
-            ImGui::TextWrapped(license::glm);
-        }
-
-        if (ImGui::CollapsingHeader("imgui")) {
-            ImGui::TextWrapped(license::imgui);
-        }
-
-        if (ImGui::CollapsingHeader("minhook")) {
-            ImGui::TextWrapped(license::minhook);
-        }
-
-        if (ImGui::CollapsingHeader("spdlog")) {
-            ImGui::TextWrapped(license::spdlog);
-        }
-
+        if (ImGui::CollapsingHeader("glm")) ImGui::TextWrapped(license::glm);
+        if (ImGui::CollapsingHeader("imgui")) ImGui::TextWrapped(license::imgui);
+        if (ImGui::CollapsingHeader("minhook")) ImGui::TextWrapped(license::minhook);
+        if (ImGui::CollapsingHeader("spdlog")) ImGui::TextWrapped(license::spdlog);
         ImGui::TreePop();
     }
-
     ImGui::TreePop();
 }
 
@@ -225,7 +206,7 @@ bool REFramework::initialize() {
         return false;
     }
 
-    ID3D11DeviceContext* context = nullptr;
+    ID3D11DeviceContext *context = nullptr;
     device->GetImmediateContext(&context);
 
     DXGI_SWAP_CHAIN_DESC swapDesc{};
@@ -243,8 +224,7 @@ bool REFramework::initialize() {
     // just do this instead of rehooking because there's no point.
     if (m_firstFrame) {
         m_dinputHook = std::make_unique<DInputHook>(m_wnd);
-    }
-    else {
+    } else {
         m_dinputHook->setWindow(m_wnd);
     }
 
@@ -252,7 +232,7 @@ bool REFramework::initialize() {
 
     createRenderTarget();
 
-    spdlog::info("Window Handle: {0:x}", (uintptr_t)m_wnd);
+    spdlog::info("Window Handle: {0:x}", (uintptr_t) m_wnd);
     spdlog::info("Initializing ImGui");
 
     IMGUI_CHECKVERSION();
@@ -270,10 +250,10 @@ bool REFramework::initialize() {
         return false;
     }
 
-    ImGuiIO& io = ImGui::GetIO();
+    ImGuiIO &io = ImGui::GetIO();
     spdlog::info("Got ImGui IO");
-    ImFont* font = io.Fonts->AddFontFromFileTTF(R"(DroidSans.ttf)", 18.0);
-    if(font == nullptr) {
+    ImFont *font = io.Fonts->AddFontFromMemoryCompressedTTF(DROID_compressed_data, DROID_compressed_size, 18.0);
+    if (font == nullptr) {
         spdlog::error("Failed to load Droid Sans.");
     }
     spdlog::info("Loaded Droid Sans font");
@@ -295,8 +275,7 @@ bool REFramework::initialize() {
             if (e) {
                 if (e->empty()) {
                     m_error = "An unknown error has occurred.";
-                }
-                else {
+                } else {
                     m_error = *e;
                 }
             }
@@ -313,8 +292,8 @@ bool REFramework::initialize() {
 void REFramework::createRenderTarget() {
     cleanupRenderTarget();
 
-    ID3D11Texture2D* backBuffer{ nullptr };
-    if (m_d3d11Hook->getSwapChain()->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&backBuffer) == S_OK) {
+    ID3D11Texture2D *backBuffer{nullptr};
+    if (m_d3d11Hook->getSwapChain()->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID *) &backBuffer) == S_OK) {
         m_d3d11Hook->getDevice()->CreateRenderTargetView(backBuffer, NULL, &m_mainRenderTargetView);
         backBuffer->Release();
     }

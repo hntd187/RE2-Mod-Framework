@@ -51,36 +51,31 @@
 
 #include <list>
 
-struct ImGradientMark
-{
+struct ImGradientMark {
     float color[4];
     float position; //0 to 1
 };
 
-class ImGradient
-{
+class ImGradient {
 public:
-    ImGradient();
+
+    ImGradient() {};
+
     ~ImGradient();
-    
-    void getColorAt(float position, float* color) const;
+
+    void getColorAt(float position, float *color) const;
+
     void addMark(float position, ImColor const color);
-    void removeMark(ImGradientMark* mark);
+
+    void removeMark(ImGradientMark *mark);
+
     void refreshCache();
-    std::list<ImGradientMark*> & getMarks(){ return m_marks; }
+
+    std::list<ImGradientMark *> &getMarks() { return m_marks; }
+
+    void computeColorAt(float position, float *color) const;
+
 private:
-    void computeColorAt(float position, float* color) const;
-    std::list<ImGradientMark*> m_marks;
-    float m_cachedValues[256 * 3];
+    std::list<ImGradientMark *> m_marks;
+    float m_cachedValues[256 * 3] = {};
 };
-
-namespace ImGui
-{
-    bool GradientButton(ImGradient* gradient);
-    
-    bool GradientEditor(ImGradient* gradient,
-                        ImGradientMark* & draggingMark,
-                        ImGradientMark* & selectedMark);
-    
-
-}

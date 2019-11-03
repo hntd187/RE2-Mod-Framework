@@ -3,6 +3,7 @@
 #include <iomanip>
 #include <sstream>
 #include <chrono>
+#include <spdlog/fmt/fmt.h>
 
 const static std::stringstream &display(std::stringstream &os, std::chrono::nanoseconds ns) {
     char fill = os.fill();
@@ -31,7 +32,7 @@ const static ImGradient createColors() {
     progressColors.addMark(1.0f, ImColor(0, 200, 0));
 
     const auto base_level = 200;
-    for (auto i = 0.1f; i < 0.9f; i += 0.1f) {
+    for (auto i = 0.01f; i < 0.99f; i += 0.01f) {
         const float red = base_level - (base_level * i);
         const float green = base_level - red;
         spdlog::info("i: {}, Red: {}, Green: {}", i, red, green);
@@ -104,14 +105,59 @@ void Speedrun::drawStats() {
     ImGui::Separator();
 
     ImGui::LabelText("Current Health", "%i", current_health);
-    ImGui::LabelText("Current Pct", "%0.f", current_pct);
+    ImGui::LabelText("Current Pct", "%0.f%%", current_pct);
     ImGui::ProgressBar(current_pct / 100.0f);
     ImGui::Separator();
 
     ImGui::LabelText("Current Rank", "%i", current_rank);
     ImGui::LabelText("Rank Points", "%1.f", rank_points);
 
+    auto enemy_manager = globals.get<RopewayEnemyManager>("app.ropeway.EnemyManager");
+    if (enemy_manager == nullptr) {
+        return;
+    }
+
+    auto enemy_controllers = enemy_manager->enemyControllers;
+    if (enemy_controllers == nullptr || enemy_controllers->data == nullptr) {
+        return;
+    }
+    int COLUMNS = 5;
+    ImGui::Columns(COLUMNS, "Health", false);
+    ImGui::Separator();
+    for (auto i = 0; i < enemy_controllers->data->numElements; ++i) {
+        auto enemy_controller = utility::REArray::getElement<RopewayEnemyController>(enemy_controllers->data, i);
+        REBehavior *hitpoint_controller = nullptr;
+        if (enemy_controller == nullptr) {
+            break;
+        }
+        if (!utility::REManagedObject::isManagedObject(enemy_controller)) {
+            continue;
+        }
+        for (auto component = enemy_controller->childComponent;
+             component != nullptr && component != enemy_controller; component = component->childComponent) {
+            if (utility::REManagedObject::isA(component, "app.ropeway.HitPointController")) {
+                hitpoint_controller = (REBehavior *) component;
+                break;
+            }
+        }
+        if (hitpoint_controller == nullptr) {
+            continue;
+        }
+
+        auto region = ImGui::GetContentRegionAvail();
+        auto box_demn = ImVec2(region.x, 20.0f);
+        auto ratio = utility::REManagedObject::getField<float>(hitpoint_controller, "HitPointRatio");
+        float c[4];
+        progressColors.getColorAt(ratio, c);
+        spdlog::info("Alpha is: {}", c[3]);
+        ImGui::ColorButton(fmt::format("{}%", ratio).data(), ImVec4(c[0], c[1], c[2], 1.0f),
+                           ImGuiColorEditFlags_NoTooltip, box_demn);
+        if ((i % COLUMNS) != 0) {
+            ImGui::SameLine((i * region.x) / COLUMNS);
+        }
+        ImGui::NextColumn();
+    }
+    ImGui::Columns(1);
 
     ImGui::End();
-
 }

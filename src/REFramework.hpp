@@ -48,7 +48,7 @@ public:
 
 private:
     void drawUI();
-    void drawAbout();
+    static void drawAbout();
 
     bool initialize();
     void createRenderTarget();
@@ -61,7 +61,7 @@ private:
     std::atomic<bool> m_gameDataInitialized{ false };
 
     std::mutex m_inputMutex{};
-    
+
     HWND m_wnd{ 0 };
     HMODULE m_gameModule{ 0 };
     uint8_t m_menuKey{ DIK_INSERT };

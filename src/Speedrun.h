@@ -25,11 +25,10 @@ public:
 private:
 
     ImGradient progressColors;
-    const int windowFlags =
-//            ImGuiWindowFlags_AlwaysAutoResize|
-            ImGuiWindowFlags_NoBackground
-            | ImGuiWindowFlags_NoTitleBar
-            | ImGuiWindowFlags_NoMove;
+    const int windowFlags = ImGuiWindowFlags_AlwaysAutoResize |
+                            ImGuiWindowFlags_NoBackground |
+                            ImGuiWindowFlags_NoTitleBar |
+                            ImGuiWindowFlags_NoMove;
 
     ModToggle::Ptr enabled{ModToggle::create(generateName("Enabled"), false)};
     ModToggle::Ptr ingame{ModToggle::create(generateName("In Game Time"), true)};

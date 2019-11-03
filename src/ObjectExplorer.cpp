@@ -2,7 +2,7 @@
 #include <fstream>
 #include <forward_list>
 
-#include <windows.h>
+#include <Windows.h>
 
 #include "utility/String.hpp"
 #include "utility/Scan.hpp"
@@ -105,8 +105,8 @@ void ObjectExplorer::onDrawUI() {
         else {
             // Search the list for a partial match instead
             for (auto i = std::find_if(m_sortedTypes.begin(), m_sortedTypes.end(), [this](const auto& a) { return a.find(m_typeName.data()) != std::string::npos; });
-                i != m_sortedTypes.end();
-                i = std::find_if(i + 1, m_sortedTypes.end(), [this](const auto& a) { return a.find(m_typeName.data()) != std::string::npos; }))
+                 i != m_sortedTypes.end();
+                 i = std::find_if(i + 1, m_sortedTypes.end(), [this](const auto& a) { return a.find(m_typeName.data()) != std::string::npos; }))
             {
                 if (auto t = getType(*i)) {
                     m_displayedTypes.push_back(t);
@@ -126,7 +126,7 @@ void ObjectExplorer::onDrawUI() {
     for (auto t : m_displayedTypes) {
         fakeType.clear();
         fakeType.reserve(t->size);
-        
+
         handleType((REManagedObject*)fakeType.data(), t);
     }
 
@@ -139,7 +139,7 @@ void ObjectExplorer::handleAddress(Address address, int32_t offset, Address pare
     }
 
     auto object = address.as<REManagedObject*>();
-    
+
     if (parent == nullptr) {
         parent = address;
     }
@@ -162,34 +162,34 @@ void ObjectExplorer::handleAddress(Address address, int32_t offset, Address pare
         else {
             // Change name based on VMType
             switch (utility::REManagedObject::getVMType(object)) {
-            case via::clr::VMObjType::Array:
-            {
-                auto arr = (REArrayBase*)object;
-                std::string name{};
-                name += "Array<";
-                name += arr->containedType != nullptr ? arr->containedType->type->name : "";
-                name += ">";
+                case via::clr::VMObjType::Array:
+                {
+                    auto arr = (REArrayBase*)object;
+                    std::string name{};
+                    name += "Array<";
+                    name += arr->containedType != nullptr ? arr->containedType->type->name : "";
+                    name += ">";
 
-                additionalText = name;
-                break;
-            }
+                    additionalText = name;
+                    break;
+                }
 
-            case via::clr::VMObjType::String:
-                additionalText = "String";
-                break;
-            case via::clr::VMObjType::Delegate:
-                additionalText = "Delegate";
-                break;
-            case via::clr::VMObjType::ValType:
-                additionalText = "ValType";
-                break;
-            case via::clr::VMObjType::Object:
-                additionalText = object->info->classInfo->type->name;
-                break;
-            case via::clr::VMObjType::NULL_:
-            default:
-                additionalText = "NULL_OBJECT";
-                break;
+                case via::clr::VMObjType::String:
+                    additionalText = "String";
+                    break;
+                case via::clr::VMObjType::Delegate:
+                    additionalText = "Delegate";
+                    break;
+                case via::clr::VMObjType::ValType:
+                    additionalText = "ValType";
+                    break;
+                case via::clr::VMObjType::Object:
+                    additionalText = object->info->classInfo->type->name;
+                    break;
+                case via::clr::VMObjType::NULL_:
+                default:
+                    additionalText = "NULL_OBJECT";
+                    break;
             }
         }
 
@@ -272,7 +272,7 @@ void ObjectExplorer::handleType(REManagedObject* obj, REType* t) {
         if (typeInfo == t && isRealObject) {
             ImGui::Text("Size: 0x%X", utility::REManagedObject::getSize(obj));
         }
-        // Super types
+            // Super types
         else {
             ImGui::Text("Size: 0x%X", typeInfo->size);
         }
@@ -304,7 +304,7 @@ void ObjectExplorer::displayEnumValue(std::string_view name, int64_t value) {
         ImGui::SameLine();
         ImGui::TextColored(VARIABLE_COLOR, "%s", firstFound.c_str());
     }
-    // Assume it's a set of flags then
+        // Assume it's a set of flags then
     else {
         ImGui::Text("%i", value);
 
@@ -492,7 +492,7 @@ void ObjectExplorer::attemptDisplayField(REManagedObject* obj, VariableDescripto
     };
 
     auto typeName = std::string{ desc->typeName };
-    auto ret = utility::hash(typeName);
+    auto ret = utility::hashFnv1a(typeName.data());
     auto getValueFunc = (void* (*)(VariableDescriptor*, REManagedObject*, void*))desc->function;
 
     char data[0x100]{ 0 };
@@ -505,80 +505,80 @@ void ObjectExplorer::attemptDisplayField(REManagedObject* obj, VariableDescripto
         // yay for compile time string hashing
         switch (ret) {
             // signed 32
-        case "u64"_fnv:
-            ImGui::Text("%llu", *(int64_t*)&data);
-            break;
-        case "u32"_fnv:
-            ImGui::Text("%i", *(int32_t*)&data);
-            break;
-        case "s32"_fnv:
-            ImGui::Text("%i", *(int32_t*)&data);
-            break;
-        case "System.Nullable`1<System.Single>"_fnv:
-        case "f32"_fnv:
-            ImGui::Text("%f", *(float*)&data);
-            break;
-        case "System.Nullable`1<System.Boolean>"_fnv:
-        case "bool"_fnv:
-            if (*(bool*)&data) {
-                ImGui::Text("true");
-            }
-            else {
-                ImGui::Text("false");
-            }
-            break;
-        case "c16"_fnv:
-            if (*(wchar_t**)&data == nullptr) {
+            case "u64"_fnv:
+                ImGui::Text("%llu", *(int64_t*)&data);
+                break;
+            case "u32"_fnv:
+                ImGui::Text("%i", *(int32_t*)&data);
+                break;
+            case "s32"_fnv:
+                ImGui::Text("%i", *(int32_t*)&data);
+                break;
+            case "System.Nullable`1<System.Single>"_fnv:
+            case "f32"_fnv:
+                ImGui::Text("%f", *(float*)&data);
+                break;
+            case "System.Nullable`1<System.Boolean>"_fnv:
+            case "bool"_fnv:
+                if (*(bool*)&data) {
+                    ImGui::Text("true");
+                }
+                else {
+                    ImGui::Text("false");
+                }
+                break;
+            case "c16"_fnv:
+                if (*(wchar_t**)&data == nullptr) {
+                    break;
+                }
+
+                ImGui::Text("%s", utility::narrow(*(wchar_t**)&data).c_str());
+                break;
+            case "c8"_fnv:
+                if (*(char**)&data == nullptr) {
+                    break;
+                }
+
+                ImGui::Text("%s", *(char**)&data);
+                break;
+            case "System.Nullable`1<via.vec2>"_fnv:
+            case "via.vec2"_fnv:
+            {
+                auto& vec = *(Vector2f*)&data;
+                ImGui::Text("%f %f", vec.x, vec.y);
                 break;
             }
-
-            ImGui::Text("%s", utility::narrow(*(wchar_t**)&data).c_str());
-            break;
-        case "c8"_fnv:
-            if (*(char**)&data == nullptr) {
+            case "System.Nullable`1<via.vec3>"_fnv:
+            case "via.vec3"_fnv:
+            {
+                auto& vec = *(Vector3f*)&data;
+                ImGui::Text("%f %f %f", vec.x, vec.y, vec.z);
                 break;
             }
-
-            ImGui::Text("%s", *(char**)&data);
-            break;
-        case "System.Nullable`1<via.vec2>"_fnv:
-        case "via.vec2"_fnv:
-        {
-            auto& vec = *(Vector2f*)&data;
-            ImGui::Text("%f %f", vec.x, vec.y);
-            break;
-        }
-        case "System.Nullable`1<via.vec3>"_fnv:
-        case "via.vec3"_fnv:
-        {
-            auto& vec = *(Vector3f*)&data;
-            ImGui::Text("%f %f %f", vec.x, vec.y, vec.z);
-            break;
-        }
-        case "via.Quaternion"_fnv:
-        {
-            auto& quat = *(glm::quat*)&data;
-            ImGui::Text("%f %f %f %f", quat.x, quat.y, quat.z, quat.w);
-            break;
-        }
-        case "via.string"_fnv:
-            ImGui::Text("%s", utility::REString::getString(*(REString*)&data).c_str());
-            break;
-        default: 
-        {
-            if (typeKind == via::reflection::TypeKind::Enum) {
-                auto value = *(int32_t*)&data;
-                displayEnumValue(typeName, (int64_t)value);
+            case "via.Quaternion"_fnv:
+            {
+                auto& quat = *(glm::quat*)&data;
+                ImGui::Text("%f %f %f %f", quat.x, quat.y, quat.z, quat.w);
+                break;
             }
-            else {
-                makeTreeAddr(*(void**)&data);
-            }
+            case "via.string"_fnv:
+                ImGui::Text("%s", utility::REString::getString(*(REString*)&data).c_str());
+                break;
+            default:
+            {
+                if (typeKind == via::reflection::TypeKind::Enum) {
+                    auto value = *(int32_t*)&data;
+                    displayEnumValue(typeName, (int64_t)value);
+                }
+                else {
+                    makeTreeAddr(*(void**)&data);
+                }
 
-            break;
-        }
+                break;
+            }
         }
     }
-    // Pointer... usually
+        // Pointer... usually
     else {
         getValueFunc(desc, obj, &data);
         makeTreeAddr(*(void**)&data);
@@ -590,11 +590,37 @@ int32_t ObjectExplorer::getFieldOffset(REManagedObject* obj, VariableDescriptor*
         return m_offsetMap[desc];
     }
 
-    auto ret = utility::hash(std::string{ desc->typeName });
+    auto ret = utility::hashFnv1a( desc->typeName );
 
     // These usually modify the object state, not what we want.
     if (ret == "undefined"_fnv) {
         return m_offsetMap[desc];
+    }
+
+    // idk. best name i could come up with.
+    static void** dotNETContext = nullptr;
+    static uint8_t* (*getThreadNETContext)(void*, int) = nullptr;
+
+    if (dotNETContext == nullptr) {
+        auto ref = utility::scan(g_framework->getModule().as<HMODULE>(), "48 8B 0D ? ? ? ? BA FF FF FF FF E8 ? ? ? ? 48 89 C3");
+
+        if (!ref) {
+            spdlog::info("Unable to find ref. getFieldOffset will not function.");
+            return 0;
+        }
+
+        dotNETContext = (void**)utility::calculateAbsolute(*ref + 3);
+        getThreadNETContext = (decltype(getThreadNETContext))utility::calculateAbsolute(*ref + 13);
+
+        spdlog::info("g_dotNETContext: {:x}", (uintptr_t)dotNETContext);
+        spdlog::info("getThreadNETContext: {:x}", (uintptr_t)getThreadNETContext);
+    }
+
+    auto someObject = Address{ getThreadNETContext(*dotNETContext, -1) };
+    static int32_t prevReferenceCount = 0;
+
+    if (someObject != nullptr) {
+        prevReferenceCount = *someObject.get(0x78).as<int32_t*>();
     }
 
     // Set up our "translator" to throw on any exception,
@@ -604,82 +630,64 @@ int32_t ObjectExplorer::getFieldOffset(REManagedObject* obj, VariableDescriptor*
     // and we need to handle it.
     _set_se_translator([](uint32_t code, EXCEPTION_POINTERS* exc) {
         switch (code) {
-        case EXCEPTION_ACCESS_VIOLATION:
-        {
-            spdlog::info("ObjectExplorer: Attempting to handle access violation.");
+            case EXCEPTION_ACCESS_VIOLATION:
+            {
+                spdlog::info("ObjectExplorer: Attempting to handle access violation.");
 
-            // idk. best name i could come up with.
-            static void** dotNETContext = nullptr;
-            static uint8_t* (*getThreadNETContext)(void*, int) = nullptr;
+                auto someObject = Address{ getThreadNETContext(*dotNETContext, -1) };
 
-            if (dotNETContext == nullptr) {
-                auto ref = utility::scan(g_framework->getModule().as<HMODULE>(), "48 8B 0D ? ? ? ? BA FF FF FF FF E8 ? ? ? ? 48 89 C3");
+                // This counter needs to be dealt with, it will end up causing a crash later on.
+                // We also need to "destruct" whatever object this is.
+                if (someObject != nullptr) {
+                    auto& referenceCount = *someObject.get(0x78).as<int32_t*>();
+                    auto countDelta = referenceCount - prevReferenceCount;
 
-                if (!ref) {
-                    spdlog::info("Unable to find ref. We are going to crash.");
-                    break;
-                }
+                    spdlog::error("{}", referenceCount);
+                    if (countDelta >= 1) {
+                        --referenceCount;
 
-                dotNETContext = (void**)utility::calculateAbsolute(*ref + 3);
-                getThreadNETContext = (decltype(getThreadNETContext))utility::calculateAbsolute(*ref + 13);
+                        static void* (*func1)(void*) = nullptr;
+                        static void* (*func2)(void*) = nullptr;
+                        static void* (*func3)(void*) = nullptr;
 
-                spdlog::info("g_dotNETContext: {:x}", (uintptr_t)dotNETContext);
-                spdlog::info("getThreadNETContext: {:x}", (uintptr_t)getThreadNETContext);
-            }
+                        // Get our function pointers
+                        if (func1 == nullptr) {
+                            spdlog::info("Locating funcs");
 
-            auto someObject = Address{ getThreadNETContext(*dotNETContext, -1) };
+                            auto ref = utility::scan(g_framework->getModule().as<HMODULE>(), "48 83 78 18 00 74 ? 48 89 D9 E8 ? ? ? ? 48 89 D9 E8 ? ? ? ?");
 
-            // This counter needs to be dealt with, it will end up causing a crash later on.
-            // We also need to "destruct" whatever object this is.
-            if (someObject != nullptr) {
-                auto& referenceCount = *someObject.get(0x78).as<int32_t*>();
+                            if (!ref) {
+                                spdlog::error("We're going to crash");
+                                break;
+                            }
 
-                spdlog::error("{}", referenceCount);
-                if (referenceCount > 1) {
-                    --referenceCount;
+                            func1 = Address{ utility::calculateAbsolute(*ref + 11) }.as<decltype(func1)>();
+                            func2 = Address{ utility::calculateAbsolute(*ref + 19) }.as<decltype(func2)>();
+                            func3 = Address{ utility::calculateAbsolute(*ref + 27) }.as<decltype(func3)>();
 
-                    static void* (*func1)(void*) = nullptr;
-                    static void* (*func2)(void*) = nullptr;
-                    static void* (*func3)(void*) = nullptr;
-
-                    // Get our function pointers
-                    if (func1 == nullptr) {
-                        spdlog::info("Locating funcs");
-
-                        auto ref = utility::scan(g_framework->getModule().as<HMODULE>(), "48 83 78 18 00 74 ? 48 89 D9 E8 ? ? ? ? 48 89 D9 E8 ? ? ? ?");
-
-                        if (!ref) {
-                            spdlog::error("We're going to crash");
-                            break;
+                            spdlog::info("F1 {:x}", (uintptr_t)func1);
+                            spdlog::info("F2 {:x}", (uintptr_t)func2);
+                            spdlog::info("F3 {:x}", (uintptr_t)func3);
                         }
 
-                        func1 = Address{ utility::calculateAbsolute(*ref + 11) }.as<decltype(func1)>();
-                        func2 = Address{ utility::calculateAbsolute(*ref + 19) }.as<decltype(func2)>();
-                        func3 = Address{ utility::calculateAbsolute(*ref + 27) }.as<decltype(func3)>();
+                        // Perform object cleanup that was missed because an exception occurred.
+                        if (someObject.get(0x50).deref().get(0x18).deref() != nullptr) {
+                            func1(someObject);
+                        }
 
-                        spdlog::info("F1 {:x}", (uintptr_t)func1);
-                        spdlog::info("F2 {:x}", (uintptr_t)func2);
-                        spdlog::info("F3 {:x}", (uintptr_t)func3);
+                        func2(someObject);
+                        func3(someObject);
                     }
-
-                    // Perform object cleanup that was missed because an exception occurred.
-                    if (someObject.get(0x50).deref().get(0x18).deref() != nullptr) {
-                        func1(someObject);                   
+                    else if (countDelta == 0) {
+                        spdlog::info("No fix necessary");
                     }
-
-                    func2(someObject);
-                    func3(someObject);
                 }
                 else {
-                    spdlog::info("Reference count was 0.");
+                    spdlog::info("thread context was null. A crash may occur.");
                 }
             }
-            else {
-                spdlog::info("thread context was null. A crash may occur.");
-            }
-        }
-        default:
-            break;
+            default:
+                break;
         }
 
         throw std::exception(std::to_string(code).c_str());
@@ -687,7 +695,7 @@ int32_t ObjectExplorer::getFieldOffset(REManagedObject* obj, VariableDescriptor*
 
     struct BitTester {
         BitTester(uint8_t* oldValue)
-            : ptr{ oldValue }
+                : ptr{ oldValue }
         {
             old = *oldValue;
         }
@@ -730,7 +738,7 @@ int32_t ObjectExplorer::getFieldOffset(REManagedObject* obj, VariableDescriptor*
             try {
                 getValueFunc(desc, (REManagedObject*)objectCopy.data(), data.data());
             }
-            // Access violation occurred. Good thing we handle it.
+                // Access violation occurred. Good thing we handle it.
             catch (const std::exception&) {
                 same = false;
                 break;

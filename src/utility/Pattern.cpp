@@ -1,7 +1,5 @@
 #include <algorithm>
 
-#include <Windows.h>
-
 #include "Memory.hpp"
 #include "Pattern.hpp"
 
@@ -24,9 +22,8 @@ namespace utility {
         return 0;
     }
 
-    Pattern::Pattern(const string& pattern)
-        : m_pattern{}
-    {
+    Pattern::Pattern(const string &pattern)
+            : m_pattern{} {
         m_pattern = move(buildPattern(pattern));
     }
 
@@ -39,14 +36,13 @@ namespace utility {
             auto failedToMatch = false;
 
             // Make sure the address is readable.
-            if (IsBadReadPtr((const void*)i, patternLength) != FALSE) {
-            //if (!isGoodReadPtr(i, patternLength)) {
-                i += patternLength - 1;
+            if (i % 0x1000 == 0 && !isGoodCodePtr(i, patternLength)) {
+                i += 0x1000;
                 continue;
             }
 
-            for (auto& k : m_pattern) {
-                if (k != -1 && k != *(uint8_t*)j) {
+            for (auto &k : m_pattern) {
+                if (k != -1 && k != *(uint8_t *) j) {
                     failedToMatch = true;
                     break;
                 }
@@ -85,8 +81,7 @@ namespace utility {
                 pattern.emplace_back(value);
 
                 i += 2;
-            }
-            else {
+            } else {
                 // Wildcard's (?'s) get encoded as a -1.
                 pattern.emplace_back(-1);
                 i += 1;

@@ -5,9 +5,8 @@
 #include "Speedrun.h"
 #include "Mods.hpp"
 
-Mods::Mods()
-{
-	m_mods.emplace_back(std::make_unique<Speedrun>());
+Mods::Mods() {
+    m_mods.emplace_back(std::make_unique<Speedrun>());
 
 #ifdef DEVELOPER
     m_mods.emplace_back(std::make_unique<DeveloperTools>());
@@ -15,7 +14,7 @@ Mods::Mods()
 }
 
 std::optional<std::string> Mods::onInitialize() const {
-    for (auto& mod : m_mods) {
+    for (auto &mod : m_mods) {
         spdlog::info("{:s}::onInitialize()", mod->getName().data());
 
         if (auto e = mod->onInitialize(); e != std::nullopt) {
@@ -24,9 +23,9 @@ std::optional<std::string> Mods::onInitialize() const {
         }
     }
 
-    utility::Config cfg{ "re2_fw_config.txt" };
+    utility::Config cfg{"re2_fw_config.txt"};
 
-    for (auto& mod : m_mods) {
+    for (auto &mod : m_mods) {
         spdlog::info("{:s}::onConfigLoad()", mod->getName().data());
         mod->onConfigLoad(cfg);
     }
@@ -35,13 +34,13 @@ std::optional<std::string> Mods::onInitialize() const {
 }
 
 void Mods::onFrame() const {
-    for (auto& mod : m_mods) {
+    for (auto &mod : m_mods) {
         mod->onFrame();
     }
 }
 
 void Mods::onDrawUI() const {
-    for (auto& mod : m_mods) {
+    for (auto &mod : m_mods) {
         mod->onDrawUI();
     }
 }
