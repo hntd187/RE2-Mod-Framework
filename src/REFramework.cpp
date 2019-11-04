@@ -33,7 +33,7 @@ REFramework::REFramework()
     m_d3d11Hook->onPresent([this](D3D11Hook &hook) { onFrame(); });
     m_d3d11Hook->onResizeBuffers([this](D3D11Hook &hook) { onReset(); });
 
-    if (m_valid = m_d3d11Hook->hook()) {
+    if ((m_valid = m_d3d11Hook->hook())) {
         spdlog::info("Hooked D3D11");
     }
 }
@@ -151,10 +151,10 @@ void REFramework::drawUI() {
 
     ImGui::GetIO().MouseDrawCursor = true;
 
-    ImGui::SetNextWindowPos(ImVec2(50, 50), ImGuiCond_::ImGuiCond_Once);
-    ImGui::SetNextWindowSize(ImVec2(500, 700), ImGuiCond_::ImGuiCond_Once);
+    ImGui::SetNextWindowPos(ImVec2(500, 50), ImGuiCond_::ImGuiCond_Once);
+    ImGui::SetNextWindowSize(ImVec2(400, 300), ImGuiCond_::ImGuiCond_Once);
 
-    ImGui::Begin("REFramework", &m_drawUI);
+    ImGui::Begin("RE2 Speedrun Overlay", &m_drawUI);
     ImGui::Text("Menu Key: Insert");
 
     drawAbout();
@@ -176,8 +176,10 @@ void REFramework::drawAbout() {
     }
 
     ImGui::TreePush("About");
-    ImGui::Text("Author: praydog");
-    ImGui::Text("Inspired by the Kanan project.");
+    ImGui::Text("Author: hntd187");
+    ImGui::Text("https://github.com/hntd187/RE2-Speedrun-Overlay");
+    ImGui::NewLine();
+    ImGui::Text("Original work on the RE2 Framework by: praydog");
     ImGui::Text("https://github.com/praydog/RE2-Mod-Framework");
     if (ImGui::CollapsingHeader("Licenses")) {
         ImGui::TreePush("Licenses");
@@ -259,6 +261,10 @@ bool REFramework::initialize() {
     spdlog::info("Loaded Droid Sans font");
 
     ImGui::StyleColorsDark();
+    ImGui::GetStyle().Colors[ImGuiCol_TitleBgActive] = ImColor(0, 0, 0);
+    ImGui::GetStyle().Colors[ImGuiCol_HeaderActive] = ImColor(0, 0, 0);
+    ImGui::GetStyle().Colors[ImGuiCol_Header] = ImColor(0, 0, 0);
+
 
     if (m_firstFrame) {
         m_firstFrame = false;

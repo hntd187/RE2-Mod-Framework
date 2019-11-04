@@ -27,9 +27,7 @@ endforeach(OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES)
 # Statically compile runtime
 set(CMAKE_BUILD_TYPE Release)
 
-string(REGEX REPLACE "/MD" "/MT" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
-
-SET(STATIC_LIBRARY_OPTIONS "${STATIC_LIBRARY_OPTIONS} /NODEFAULTLIB:library")
+string(REGEX REPLACE "/MD" "/MT" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
 add_subdirectory(dependencies)
 add_subdirectory(src)

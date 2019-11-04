@@ -1,6 +1,8 @@
 add_subdirectory(spdlog)
 
 SET(GLM_TEST_ENABLE OFF CACHE BOOL "Build unit tests" FORCE)
+string(REGEX REPLACE "/MD" "/MT" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+
 add_subdirectory(glm)
 
 project(minhook)

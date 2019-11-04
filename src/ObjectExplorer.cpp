@@ -501,7 +501,9 @@ void ObjectExplorer::attemptDisplayField(REManagedObject* obj, VariableDescripto
     // 0x10 == pointer, i think?
     if (typeKind != via::reflection::TypeKind::Class || desc->staticVariableData == nullptr) {
         getValueFunc(desc, obj, &data);
-
+        // I don't know how to make this warning go away, so just supressing it for now to save my sanity.
+        #pragma warning( push )
+        #pragma warning( disable: 4307 )
         // yay for compile time string hashing
         switch (ret) {
             // signed 32
@@ -583,6 +585,7 @@ void ObjectExplorer::attemptDisplayField(REManagedObject* obj, VariableDescripto
         getValueFunc(desc, obj, &data);
         makeTreeAddr(*(void**)&data);
     }
+    #pragma warning( pop )
 }
 
 int32_t ObjectExplorer::getFieldOffset(REManagedObject* obj, VariableDescriptor* desc) {

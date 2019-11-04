@@ -12,13 +12,7 @@ set(HOOKS_SRC
 set(MODS_SRC
     DeveloperTools.hpp
     DeveloperTools.cpp
-    FirstPerson.hpp
-    FirstPerson.cpp
-    FreeCam.hpp
-    FreeCam.cpp
-    ManualFlashlight.hpp
-    ManualFlashlight.cpp
-    ObjectExplorer.hpp
+	ObjectExplorer.hpp
     ObjectExplorer.cpp
 	Speedrun.h
 	Speedrun.cpp
@@ -96,19 +90,16 @@ add_library(RE2 SHARED
             ${FRAMEWORK_SRC}
 )
 
-set(CMAKE_BUILD_TYPE Release)
 target_link_libraries(RE2 PUBLIC imgui minhook d3d11 glm_static shlwapi)
-target_compile_options(RE2 PUBLIC /GS /GR)
+target_compile_options(RE2 PUBLIC /GS /GR /EHa)
 target_compile_features(RE2 PUBLIC cxx_std_17)
-SET(STATIC_LIBRARY_OPTIONS "${STATIC_LIBRARY_OPTIONS} /NODEFAULTLIB:library")
 
 include_directories(RE2 ${CMAKE_CURRENT_SOURCE_DIR})
 set_target_properties(RE2 PROPERTIES OUTPUT_NAME dinput8)
-string(REGEX REPLACE "/MD" "/MT" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
 
+string(REGEX REPLACE "/MD" "/MT" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 option(DEVELOPER_MODE "Adds DeveloperTools option to menu" OFF)
 
 if(DEVELOPER_MODE)
-target_compile_definitions(RE2 PUBLIC DEVELOPER)
-target_compile_options(RE2 PUBLIC /EHa)
+	target_compile_definitions(RE2 PUBLIC DEVELOPER)
 endif()

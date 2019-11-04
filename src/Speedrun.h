@@ -1,7 +1,6 @@
 #pragma once
 
 #include <chrono>
-#include "re2-imgui/imgui_color_gradient.h"
 #include "Mod.hpp"
 
 using namespace std;
@@ -22,14 +21,29 @@ public:
 
     void drawStats();
 
+    static void drawIngameTime(REBehavior *clock);
+
+    static void drawHealth(REBehavior *health);
+
+    static void drawGameRank(REBehavior *rank);
+
+    static void drawEnemies(RopewayEnemyManager *enemies);
+
 private:
 
-    ImGradient progressColors;
     const int windowFlags = ImGuiWindowFlags_AlwaysAutoResize |
+                            ImGuiWindowFlags_NoDecoration |
                             ImGuiWindowFlags_NoBackground |
-                            ImGuiWindowFlags_NoTitleBar |
-                            ImGuiWindowFlags_NoMove;
+                            ImGuiWindowFlags_NoBringToFrontOnFocus |
+                            ImGuiWindowFlags_NoFocusOnAppearing |
+                            ImGuiWindowFlags_NoNav |
+                            ImGuiWindowFlags_NoMove |
+                            ImGuiWindowFlags_NoInputs;
 
     ModToggle::Ptr enabled{ModToggle::create(generateName("Enabled"), false)};
     ModToggle::Ptr ingame{ModToggle::create(generateName("In Game Time"), true)};
+    ModToggle::Ptr health{ModToggle::create(generateName("Health"), true)};
+    ModToggle::Ptr game_rank{ModToggle::create(generateName("Rank"), true)};
+    ModToggle::Ptr local_enemies{ModToggle::create(generateName("Local Enemies"), true)};
+
 };
