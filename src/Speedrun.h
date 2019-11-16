@@ -30,16 +30,22 @@ public:
     static void drawEnemies(RopewayEnemyManager *enemies);
 
 private:
+    constexpr static const int COLUMNS = 5;
+    constexpr static const char *info_labels[4] = {"IGT", "Health", "Rank", "Enemies"};
 
-    const int windowFlags = ImGuiWindowFlags_AlwaysAutoResize |
-                            ImGuiWindowFlags_NoDecoration |
-                            ImGuiWindowFlags_NoBackground |
-                            ImGuiWindowFlags_NoBringToFrontOnFocus |
-                            ImGuiWindowFlags_NoFocusOnAppearing |
-                            ImGuiWindowFlags_NoNav |
-                            ImGuiWindowFlags_NoMove |
-                            ImGuiWindowFlags_NoInputs;
+    int info_order[4] = {1, 2, 3, 4};
 
+    static const int windowFlags(const bool locked) {
+        auto base_flags = ImGuiWindowFlags_AlwaysAutoResize |
+                          ImGuiWindowFlags_NoDecoration |
+                          ImGuiWindowFlags_NoBackground |
+                          ImGuiWindowFlags_NoBringToFrontOnFocus |
+                          ImGuiWindowFlags_NoFocusOnAppearing |
+                          ImGuiWindowFlags_NoNav;
+        return (locked) ? base_flags | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoInputs : base_flags;
+    }
+
+    ModToggle::Ptr locked{ModToggle::create(generateName("Lock Window"), true)};
     ModToggle::Ptr enabled{ModToggle::create(generateName("Enabled"), false)};
     ModToggle::Ptr ingame{ModToggle::create(generateName("In Game Time"), true)};
     ModToggle::Ptr health{ModToggle::create(generateName("Health"), true)};

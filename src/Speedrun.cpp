@@ -3,6 +3,7 @@
 #include <iomanip>
 #include <sstream>
 #include <chrono>
+#include <utility>
 
 const static std::stringstream &display(std::stringstream &os, std::chrono::nanoseconds ns) {
     char fill = os.fill();
@@ -48,10 +49,40 @@ void Speedrun::onDrawUI() {
         return;
     }
     enabled->draw("Enabled");
+    locked->draw("Lock Window");
     ingame->draw("In Game Time");
     health->draw("Health");
     game_rank->draw("Game Rank");
     local_enemies->draw("Nearby Enemies");
+
+    ImGui::BulletText("Drag and drop to re-order");
+    int move_from = -1, move_to = -1;
+    for (int n = 0; n < 4; n++) {
+        ImGui::Selectable(info_labels[info_order[n] - 1], info_order[n]);
+
+        ImGuiDragDropFlags src_flags =
+                ImGuiDragDropFlags_SourceNoDisableHover | ImGuiDragDropFlags_SourceNoHoldToOpenOthers |
+                ImGuiDragDropFlags_SourceNoPreviewTooltip;
+        if (ImGui::BeginDragDropSource(src_flags)) {
+            ImGui::SetDragDropPayload("DND_DEMO_NAME", &n, sizeof(int));
+            ImGui::EndDragDropSource();
+        }
+
+        if (ImGui::BeginDragDropTarget()) {
+            ImGuiDragDropFlags target_flags =
+                    ImGuiDragDropFlags_AcceptBeforeDelivery | ImGuiDragDropFlags_AcceptNoDrawDefaultRect;
+            if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("DND_DEMO_NAME", target_flags)) {
+                move_from = *(const int *) payload->Data;
+                move_to = n;
+            }
+            ImGui::EndDragDropTarget();
+        }
+    }
+
+    if (move_from != -1 && move_to != -1) {
+        std::swap(info_order[move_from], info_order[move_to]);
+        ImGui::SetDragDropPayload("DND_DEMO_NAME", &move_to, sizeof(int));
+    }
 }
 
 void Speedrun::onConfigLoad(const utility::Config &cfg) {
@@ -73,32 +104,42 @@ void Speedrun::onConfigSave(utility::Config &cfg) {
 void Speedrun::drawStats() {
 
     auto &globals = *g_framework->getGlobals();
-
     auto clock = globals.get<REBehavior>("app.ropeway.GameClock");
     auto system_time_nanos = get_nanos(clock, "SystemElapsedTime");
-
     ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowSize(ImVec2(500, 500), ImGuiCond_FirstUseEver);
-    ImGui::Begin("", &enabled->value(), windowFlags);
+    ImGui::Begin("", &enabled->value(), windowFlags(locked->value()));
     ImGui::LabelText("System Time", "%lld", system_time_nanos.count());
     ImGui::Separator();
-    if (ingame->value()) {
-        drawIngameTime(clock);
-    }
-    if (health->value()) {
-        auto player = globals.get<REBehavior>("app.ropeway.PlayerManager");
-        drawHealth(player);
-    }
-    if (game_rank->value()) {
-        auto rank = globals.get<REBehavior>("app.ropeway.GameRankSystem");
-        drawGameRank(rank);
-    }
-    if (local_enemies->value()) {
-        auto enemy_manager = globals.get<RopewayEnemyManager>("app.ropeway.EnemyManager");
-        drawEnemies(enemy_manager);
-    }
-    if (enabled->value() && !ingame->value() && !health->value() && !game_rank->value() && !local_enemies->value()) {
-        ImGui::Text("You disabled everything, but left the overlay enabled.");
+    for (auto i = 0; i < 4; i++) {
+        switch (info_order[i]) {
+            case 1:
+                if (ingame->value()) drawIngameTime(clock);
+                continue;
+            case 2:
+                if (health->value()) {
+                    auto player = globals.get<REBehavior>("app.ropeway.PlayerManager");
+                    drawHealth(player);
+                }
+                continue;
+            case 3:
+                if (game_rank->value()) {
+                    auto rank = globals.get<REBehavior>("app.ropeway.GameRankSystem");
+                    drawGameRank(rank);
+                }
+                continue;
+            case 4:
+                if (local_enemies->value()) {
+                    auto enemy_manager = globals.get<RopewayEnemyManager>("app.ropeway.EnemyManager");
+                    drawEnemies(enemy_manager);
+                }
+                continue;
+        }
+        if (enabled->value() && !ingame->value() && !health->value() && !game_rank->value() &&
+            !local_enemies->value()) {
+            ImGui::Text("You disabled everything, but left the overlay enabled.");
+        }
+
     }
     ImGui::End();
 }
@@ -113,7 +154,6 @@ void Speedrun::drawIngameTime(REBehavior *clock) {
     os = std::stringstream();
     o = display(os, inv_time_nanos).str();
     ImGui::LabelText("Inventory Time", "%s", o.data());
-    ImGui::Separator();
 }
 
 void Speedrun::drawHealth(REBehavior *player) {
@@ -125,7 +165,6 @@ void Speedrun::drawHealth(REBehavior *player) {
     ImGui::LabelText("Current Health", "%i", current_health);
     ImGui::LabelText("Current Pct", "%0.f%%", current_pct);
     ImGui::ProgressBar(current_pct / 100.0f);
-    ImGui::Separator();
 }
 
 void Speedrun::drawGameRank(REBehavior *rank) {
@@ -140,9 +179,7 @@ void Speedrun::drawEnemies(RopewayEnemyManager *enemy_manager) {
     if (enemy_manager != nullptr) {
         auto enemy_controllers = enemy_manager->enemyControllers;
         if (enemy_controllers != nullptr && enemy_controllers->data != nullptr) {
-            int COLUMNS = 5;
             ImGui::Columns(COLUMNS, "Health", false);
-            ImGui::Separator();
 
             for (auto i = 0; i < enemy_controllers->data->numElements; ++i) {
                 auto ec = utility::REArray::getElement<RopewayEnemyController>(enemy_controllers->data, i);
@@ -163,6 +200,8 @@ void Speedrun::drawEnemies(RopewayEnemyManager *enemy_manager) {
                 ImGui::NextColumn();
             }
             ImGui::Columns(1);
+            ImGui::NewLine();
+            ImGui::NewLine();
         }
     }
 }

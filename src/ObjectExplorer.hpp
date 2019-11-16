@@ -19,7 +19,6 @@ private:
     void handleAddress(Address address, int32_t offset = -1, Address parent = nullptr);
     void handleGameObject(REGameObject* gameObject);
     void handleComponent(REComponent* component);
-    void handleTransform(RETransform* transform);
     void handleType(REManagedObject* obj, REType* t);
 
     void displayEnumValue(std::string_view name, int64_t value);
