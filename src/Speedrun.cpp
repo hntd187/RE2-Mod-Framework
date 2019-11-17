@@ -27,10 +27,15 @@ const static chrono::nanoseconds get_nanos(REManagedObject *bh, const string &ke
 }
 
 const static ImColor createColor(const float i) {
-    const auto base_level = 255;
-    const auto red = base_level - (base_level * i);
-    const auto green = base_level - red;
-    return IM_COL32(red, green, 0, 255);
+    if (i == 1.0f) {
+        return IM_COL32(37, 97, 68, 255);
+    } else if (i < 1.0f && i >= 0.66f) {
+        return IM_COL32(51, 72, 24, 255);
+    } else if (i < 0.66f && i >= 0.30f) {
+        return IM_COL32(94, 72, 27, 255);
+    } else if (i < 0.30f) {
+        return IM_COL32(136, 1, 27, 255);
+    }
 }
 
 std::optional<std::string> Speedrun::onInitialize() {
