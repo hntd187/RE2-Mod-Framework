@@ -1,5 +1,7 @@
 #pragma once
 
+#include <imgui.h>
+
 #include <chrono>
 #include "Mod.hpp"
 
@@ -23,11 +25,11 @@ public:
 
     static void drawIngameTime(REBehavior *clock);
 
-    static void drawHealth(REBehavior *health);
+    static void drawHealth(REBehavior *health, const bool draw_health = true);
 
     static void drawGameRank(REBehavior *rank);
 
-    static void drawEnemies(RopewayEnemyManager *enemies);
+    static void drawEnemies(RopewayEnemyManager *enemies, const bool draw_bg = true);
 
 private:
     constexpr static const int COLUMNS = 5;
@@ -51,5 +53,8 @@ private:
     ModToggle::Ptr health{ModToggle::create(generateName("Health"), true)};
     ModToggle::Ptr game_rank{ModToggle::create(generateName("Rank"), true)};
     ModToggle::Ptr local_enemies{ModToggle::create(generateName("Local Enemies"), true)};
+    ModToggle::Ptr health_bar{ModToggle::create(generateName("Health Bar"), true)};
+    ModToggle::Ptr colored_buttons{ModToggle::create(generateName("Colored Backgrounds for Enemy Health"), true)};
+
 
 };

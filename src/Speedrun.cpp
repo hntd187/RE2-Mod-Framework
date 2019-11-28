@@ -27,7 +27,7 @@ const static chrono::nanoseconds get_nanos(REManagedObject *bh, const string &ke
 }
 
 const static ImColor createColor(const float i) {
-    if (i == 1.0f) {
+    if (i >= 1.0f) {
         return IM_COL32(37, 97, 68, 255);
     } else if (i < 1.0f && i >= 0.66f) {
         return IM_COL32(51, 72, 24, 255);
@@ -35,6 +35,18 @@ const static ImColor createColor(const float i) {
         return IM_COL32(94, 72, 27, 255);
     } else if (i < 0.30f) {
         return IM_COL32(136, 1, 27, 255);
+    }
+    return IM_COL32(136, 1, 27, 255);
+}
+
+const static void makeButton(const float ratio, const bool draw_bg) {
+    const ImColor color = createColor(ratio);
+    if (draw_bg) {
+        ImGui::PushStyleColor(ImGuiCol_Button, (ImU32) color);
+        ImGui::Button(fmt::format("{:.0%}", ratio).data(), ImVec2(70, 30));
+        ImGui::PopStyleColor(1);
+    } else {
+        ImGui::TextColored(color, "%.0f%%", ratio * 100.0);
     }
 }
 
@@ -59,7 +71,10 @@ void Speedrun::onDrawUI() {
     health->draw("Health");
     game_rank->draw("Game Rank");
     local_enemies->draw("Nearby Enemies");
-
+    health_bar->draw("Health Bar");
+    colored_buttons->draw("Colored Backgrounds for Enemies");
+    ImGui::NewLine();
+    ImGui::NewLine();
     ImGui::BulletText("Drag and drop to re-order");
     int move_from = -1, move_to = -1;
     for (int n = 0; n < 4; n++) {
@@ -124,7 +139,7 @@ void Speedrun::drawStats() {
             case 2:
                 if (health->value()) {
                     auto player = globals.get<REBehavior>("app.ropeway.PlayerManager");
-                    drawHealth(player);
+                    drawHealth(player, health_bar->value());
                 }
                 continue;
             case 3:
@@ -136,7 +151,7 @@ void Speedrun::drawStats() {
             case 4:
                 if (local_enemies->value()) {
                     auto enemy_manager = globals.get<RopewayEnemyManager>("app.ropeway.EnemyManager");
-                    drawEnemies(enemy_manager);
+                    drawEnemies(enemy_manager, colored_buttons->value());
                 }
                 continue;
         }
@@ -161,15 +176,17 @@ void Speedrun::drawIngameTime(REBehavior *clock) {
     ImGui::LabelText("Inventory Time", "%s", o.data());
 }
 
-void Speedrun::drawHealth(REBehavior *player) {
+void Speedrun::drawHealth(REBehavior *player, const bool draw_health) {
     auto player_condition = utility::REManagedObject::getField<REBehavior *>(player, "CurrentPlayerCondition");
     auto current_health = utility::REManagedObject::getField<signed int>(player_condition, "CurrentHitPoint");
     auto current_pct = utility::REManagedObject::getField<float>(player_condition, "HitPointPercentage");
 
-    ImGui::GetStyle().Colors[ImGuiCol_PlotHistogram] = createColor(current_pct / 100.0f);
     ImGui::LabelText("Current Health", "%i", current_health);
     ImGui::LabelText("Current Pct", "%0.f%%", current_pct);
-    ImGui::ProgressBar(current_pct / 100.0f);
+    if (draw_health) {
+        ImGui::GetStyle().Colors[ImGuiCol_PlotHistogram] = createColor(current_pct / 100.0f);
+        ImGui::ProgressBar(current_pct / 100.0f);
+    }
 }
 
 void Speedrun::drawGameRank(REBehavior *rank) {
@@ -180,7 +197,7 @@ void Speedrun::drawGameRank(REBehavior *rank) {
     ImGui::LabelText("Rank Points", "%1.f", rank_points);
 }
 
-void Speedrun::drawEnemies(RopewayEnemyManager *enemy_manager) {
+void Speedrun::drawEnemies(RopewayEnemyManager *enemy_manager, const bool draw_bg) {
     if (enemy_manager != nullptr) {
         auto enemy_controllers = enemy_manager->enemyControllers;
         if (enemy_controllers != nullptr && enemy_controllers->data != nullptr) {
@@ -200,7 +217,8 @@ void Speedrun::drawEnemies(RopewayEnemyManager *enemy_manager) {
                 if (hitpoint_controller == nullptr) continue;
                 auto region = ImGui::GetContentRegionAvail();
                 auto ratio = utility::REManagedObject::getField<float>(hitpoint_controller, "HitPointRatio");
-                ImGui::TextColored(createColor(ratio), "%.0f%%", ratio * 100.0);
+//                ImGui::TextColored(createColor(ratio), "%.0f%%", ratio * 100.0);
+                makeButton(ratio, draw_bg);
                 if ((i % COLUMNS) != 0) ImGui::SameLine((i * region.x) / COLUMNS);
                 ImGui::NextColumn();
             }

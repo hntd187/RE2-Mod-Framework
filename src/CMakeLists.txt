@@ -38,8 +38,6 @@ set(RE2IMGUI_SRC
     re2-imgui/imgui_impl_win32.cpp
     re2-imgui/imgui_impl_dx11.h
     re2-imgui/imgui_impl_dx11.cpp
-	re2-imgui/imgui_color_gradient.h
-	re2-imgui/imgui_color_gradient.cpp
 )
 
 set(UTILITY_SRC

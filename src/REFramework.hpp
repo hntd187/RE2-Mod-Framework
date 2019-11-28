@@ -1,6 +1,7 @@
 #pragma once
 
 #include <spdlog/spdlog.h>
+#include <imgui.h>
 
 class Mods;
 class REGlobals;
@@ -80,5 +81,7 @@ private:
 
     ID3D11RenderTargetView* m_mainRenderTargetView{ nullptr };
 };
+
+const static void setupStyle(ImGuiStyle &st);
 
 extern std::unique_ptr<REFramework> g_framework;
