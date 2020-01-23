@@ -491,7 +491,7 @@ void ObjectExplorer::attemptDisplayField(REManagedObject *obj, VariableDescripto
     auto getValueFunc = (void *(*)(VariableDescriptor *, REManagedObject *, void *)) desc->function;
 
     char data[0x100]{0};
-    auto typeKind = (via::reflection::TypeKind)(desc->flags & 0x1F);
+    auto typeKind = (via::reflection::TypeKind) (desc->flags & 0x1F);
 
     // 0x10 == pointer, i think?
     if (typeKind != via::reflection::TypeKind::Class || desc->staticVariableData == nullptr) {
@@ -500,6 +500,7 @@ void ObjectExplorer::attemptDisplayField(REManagedObject *obj, VariableDescripto
 #pragma warning( push )
 #pragma warning( disable: 4307 )
         // yay for compile time string hashing
+//        auto fieldOffset = getFieldOffset(obj, desc);
         switch (ret) {
             // signed 32
             case "u64"_fnv:
@@ -507,13 +508,28 @@ void ObjectExplorer::attemptDisplayField(REManagedObject *obj, VariableDescripto
                 break;
             case "u32"_fnv:
                 ImGui::Text("%i", *(int32_t *) &data);
+//                if (fieldOffset != 0) {
+//                    auto &int_val = *Address{obj}.get(fieldOffset).as<int32_t *>();
+//
+//                    ImGui::SliderInt("Set Value", &int_val, int_val - 1, int_val + 1);
+//                }
                 break;
             case "s32"_fnv:
                 ImGui::Text("%i", *(int32_t *) &data);
+//                if (fieldOffset != 0) {
+//                    auto &int_val = *Address{obj}.get(fieldOffset).as<int32_t *>();
+//
+//                    ImGui::SliderInt("Set Value", &int_val, int_val - 1, int_val + 1);
+//                }
                 break;
             case "System.Nullable`1<System.Single>"_fnv:
             case "f32"_fnv:
                 ImGui::Text("%f", *(float *) &data);
+//                if (fieldOffset != 0) {
+//                    auto &float_val = *Address{obj}.get(fieldOffset).as<float *>();
+//
+//                    ImGui::SliderFloat("Set Value", &float_val, float_val - 1.0f, float_val + 1.0f);
+//                }
                 break;
             case "System.Nullable`1<System.Boolean>"_fnv:
             case "bool"_fnv:
@@ -522,6 +538,11 @@ void ObjectExplorer::attemptDisplayField(REManagedObject *obj, VariableDescripto
                 } else {
                     ImGui::Text("false");
                 }
+//                if (fieldOffset != 0) {
+//                    auto &bool_val = *Address{obj}.get(fieldOffset).as<bool *>();
+//
+//                    ImGui::Checkbox("Set Value", &bool_val);
+//                }
                 break;
             case "c16"_fnv:
                 if (*(wchar_t **) &data == nullptr) {
@@ -541,17 +562,59 @@ void ObjectExplorer::attemptDisplayField(REManagedObject *obj, VariableDescripto
             case "via.vec2"_fnv: {
                 auto &vec = *(Vector2f *) &data;
                 ImGui::Text("%f %f", vec.x, vec.y);
+//                if (fieldOffset != 0) {
+//                    auto &vec_val = *Address{obj}.get(fieldOffset).as<Vector2f *>();
+//                    auto largest_val = vec_val.x;
+//
+//                    if (vec_val.y > largest_val) {
+//                        largest_val = vec_val.y;
+//                    }
+//
+//                    ImGui::SliderFloat2("Set Value", (float *) &vec_val, largest_val - 1.0f, largest_val + 1.0f);
+//                }
                 break;
             }
             case "System.Nullable`1<via.vec3>"_fnv:
             case "via.vec3"_fnv: {
                 auto &vec = *(Vector3f *) &data;
                 ImGui::Text("%f %f %f", vec.x, vec.y, vec.z);
+//                if (fieldOffset != 0) {
+//                    auto &vec_val = *Address{obj}.get(fieldOffset).as<Vector3f *>();
+//                    auto largest_val = vec_val.x;
+//
+//                    if (vec_val.y > largest_val) {
+//                        largest_val = vec_val.y;
+//                    }
+//
+//                    if (vec_val.z > largest_val) {
+//                        largest_val = vec_val.z;
+//                    }
+//
+//                    ImGui::SliderFloat3("Set Value", (float *) &vec_val, largest_val - 1.0f, largest_val + 1.0f);
+//                }
                 break;
             }
             case "via.Quaternion"_fnv: {
                 auto &quat = *(glm::quat *) &data;
                 ImGui::Text("%f %f %f %f", quat.x, quat.y, quat.z, quat.w);
+//                if (fieldOffset != 0) {
+//                    auto &vec_val = *Address{obj}.get(fieldOffset).as<Vector4f *>();
+//                    auto largest_val = vec_val.x;
+//
+//                    if (vec_val.y > largest_val) {
+//                        largest_val = vec_val.y;
+//                    }
+//
+//                    if (vec_val.z > largest_val) {
+//                        largest_val = vec_val.z;
+//                    }
+//
+//                    if (vec_val.w > largest_val) {
+//                        largest_val = vec_val.w;
+//                    }
+//
+//                    ImGui::SliderFloat4("Set Value", (float *) &vec_val, largest_val - 1.0f, largest_val + 1.0f);
+//                }
                 break;
             }
             case "via.string"_fnv:
@@ -561,6 +624,11 @@ void ObjectExplorer::attemptDisplayField(REManagedObject *obj, VariableDescripto
                 if (typeKind == via::reflection::TypeKind::Enum) {
                     auto value = *(int32_t *) &data;
                     displayEnumValue(typeName, (int64_t) value);
+//                    if (fieldOffset != 0) {
+//                        auto &int_val = *Address{obj}.get(fieldOffset).as<int32_t *>();
+//
+//                        ImGui::SliderInt("Set Value", &int_val, int_val - 1, int_val + 1);
+//                    }
                 } else {
                     makeTreeAddr(*(void **) &data);
                 }

@@ -16,9 +16,24 @@
 
 #include "REFramework.hpp"
 
+class IModValue {
+public:
+    using Ptr = std::unique_ptr<IModValue>;
+
+    virtual ~IModValue() {};
+
+    virtual bool draw(std::string_view name) = 0;
+
+    virtual void drawValue(std::string_view name) = 0;
+
+    virtual void configLoad(const utility::Config &cfg) = 0;
+
+    virtual void configSave(utility::Config &cfg) = 0;
+};
+
 // Convenience classes for imgui
 template<typename T>
-class ModValue {
+class ModValue : public IModValue {
 public:
     using Ptr = std::unique_ptr<ModValue<T>>;
 
@@ -31,13 +46,13 @@ public:
               m_value{defaultValue} {
     }
 
-    virtual ~ModValue() {};
+    virtual ~ModValue() override {};
 
     virtual bool draw(std::string_view name) = 0;
 
     virtual void drawValue(std::string_view name) = 0;
 
-    virtual void configLoad(const utility::Config &cfg) {
+    virtual void configLoad(const utility::Config &cfg) override {
         auto v = cfg.get<T>(m_configName);
 
         if (v) {
@@ -45,9 +60,13 @@ public:
         }
     };
 
-    virtual void configSave(utility::Config &cfg) {
+    virtual void configSave(utility::Config &cfg) override {
         cfg.set<T>(m_configName, m_value);
     };
+
+    operator IModValue &() {
+        return *(IModValue *) this;
+    }
 
     operator T &() {
         return m_value;
@@ -160,8 +179,8 @@ public:
         return std::make_unique<ModInt32>(configName, defaultValue);
     }
 
-    ModInt32(std::string_view configName, uint32_t defaultValue = 0) : ModValue{configName,
-                                                                                static_cast<int>(defaultValue)} {
+    ModInt32(std::string_view configName, uint32_t defaultValue = 0)
+            : ModValue{configName, static_cast<int>(defaultValue)} {
     }
 
     bool draw(std::string_view name) override {
@@ -213,7 +232,11 @@ public:
             ImGui::SameLine();
 
             if (m_value >= 0 && m_value <= 255) {
-                ImGui::Text("%i", m_value);
+                WCHAR key_name[1024];
+                UINT scanCode = MapVirtualKeyW(m_value, MAPVK_VK_TO_CHAR);
+                LONG lParamValue = (scanCode << 16);
+                int result = GetKeyNameTextW(lParamValue, key_name, 1024);
+                ImGui::Text("%ls", key_name);
             } else {
                 ImGui::Text("Not bound");
             }
@@ -263,6 +286,9 @@ protected:
 };
 
 class Mod {
+protected:
+    using ValueList = std::vector<std::reference_wrapper<IModValue>>;
+
 public:
     virtual std::string_view getName() const { return "UnknownMod"; };
 
@@ -295,4 +321,3 @@ public:
 
     virtual void onUpdateCameraController2(RopewayPlayerCameraController *controller) {};
 };
-

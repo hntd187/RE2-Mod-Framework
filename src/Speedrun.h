@@ -21,6 +21,8 @@ public:
 
     void onConfigSave(utility::Config &cfg) override;
 
+    static void reset();
+
     void drawStats();
 
     static void drawIngameTime(REBehavior *clock);
@@ -47,14 +49,14 @@ private:
         return (locked) ? base_flags | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoInputs : base_flags;
     }
 
-    ModToggle::Ptr locked{ModToggle::create(generateName("Lock Window"), true)};
-    ModToggle::Ptr enabled{ModToggle::create(generateName("Enabled"), false)};
-    ModToggle::Ptr ingame{ModToggle::create(generateName("In Game Time"), true)};
-    ModToggle::Ptr health{ModToggle::create(generateName("Health"), true)};
-    ModToggle::Ptr game_rank{ModToggle::create(generateName("Rank"), true)};
-    ModToggle::Ptr local_enemies{ModToggle::create(generateName("Local Enemies"), true)};
-    ModToggle::Ptr health_bar{ModToggle::create(generateName("Health Bar"), true)};
-    ModToggle::Ptr colored_buttons{ModToggle::create(generateName("Colored Backgrounds for Enemy Health"), true)};
-
+    const ModToggle::Ptr locked{ModToggle::create(generateName("Lock Window"), true)};
+    const ModToggle::Ptr enabled{ModToggle::create(generateName("Enabled"), false)};
+    const ModToggle::Ptr ingame{ModToggle::create(generateName("In Game Time"), true)};
+    const ModToggle::Ptr health{ModToggle::create(generateName("Health"), true)};
+    const ModToggle::Ptr game_rank{ModToggle::create(generateName("Rank"), true)};
+    const ModToggle::Ptr local_enemies{ModToggle::create(generateName("Local Enemies"), true)};
+    const ModToggle::Ptr health_bar{ModToggle::create(generateName("Health Bar"), true)};
+    const ModToggle::Ptr colored_buttons{ModToggle::create(generateName("Colored Backgrounds for Enemy Health"), true)};
+    const ModKey::Ptr reset_btn{ModKey::create(generateName("reset"), DIKEYBOARD_F9)};
 
 };

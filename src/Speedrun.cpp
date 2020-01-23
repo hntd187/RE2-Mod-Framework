@@ -55,6 +55,9 @@ std::optional<std::string> Speedrun::onInitialize() {
 }
 
 void Speedrun::onFrame() {
+    if (reset_btn->isKeyDownOnce()) {
+        return reset();
+    }
     if (enabled->value()) {
         drawStats();
     }
@@ -73,6 +76,8 @@ void Speedrun::onDrawUI() {
     local_enemies->draw("Nearby Enemies");
     health_bar->draw("Health Bar");
     colored_buttons->draw("Colored Backgrounds for Enemies");
+    reset_btn->draw("Reset Bind");
+
     ImGui::NewLine();
     ImGui::NewLine();
     ImGui::BulletText("Drag and drop to re-order");
@@ -111,6 +116,7 @@ void Speedrun::onConfigLoad(const utility::Config &cfg) {
     health->configLoad(cfg);
     game_rank->configLoad(cfg);
     local_enemies->configLoad(cfg);
+    reset_btn->configLoad(cfg);
 }
 
 void Speedrun::onConfigSave(utility::Config &cfg) {
@@ -119,6 +125,7 @@ void Speedrun::onConfigSave(utility::Config &cfg) {
     health->configSave(cfg);
     game_rank->configSave(cfg);
     local_enemies->configSave(cfg);
+    reset_btn->configSave(cfg);
 }
 
 void Speedrun::drawStats() {
@@ -217,7 +224,6 @@ void Speedrun::drawEnemies(RopewayEnemyManager *enemy_manager, const bool draw_b
                 if (hitpoint_controller == nullptr) continue;
                 auto region = ImGui::GetContentRegionAvail();
                 auto ratio = utility::REManagedObject::getField<float>(hitpoint_controller, "HitPointRatio");
-//                ImGui::TextColored(createColor(ratio), "%.0f%%", ratio * 100.0);
                 makeButton(ratio, draw_bg);
                 if ((i % COLUMNS) != 0) ImGui::SameLine((i * region.x) / COLUMNS);
                 ImGui::NextColumn();
@@ -226,6 +232,20 @@ void Speedrun::drawEnemies(RopewayEnemyManager *enemy_manager, const bool draw_b
             ImGui::NewLine();
             ImGui::NewLine();
         }
+    }
+}
+
+void Speedrun::reset() {
+    auto &globals = *g_framework->getGlobals();
+    auto rank = globals.get<REBehavior>("app.ropeway.gamemastering.MainFlowManager");
+    auto inGame = utility::REManagedObject::getField<signed int>(rank, "IsInGame");
+    auto gameOver = utility::REManagedObject::getField<signed int>(rank, "IsInGameOver");
+    auto resetTitle = utility::REManagedObject::getField<signed int>(rank, "IsInResetTitle");
+    auto wakeUp = utility::REManagedObject::getField<signed int>(rank, "IsInWakeUp");
+
+    if (inGame && !gameOver) {
+        spdlog::info("inGame: {}, gameOver: {}, resetTitle: {}, wakeUp: {}", inGame, gameOver, resetTitle, wakeUp);
+        utility::REManagedObject::getField<REComponent *>(rank, "goResetGameToTitle");
     }
 }
 

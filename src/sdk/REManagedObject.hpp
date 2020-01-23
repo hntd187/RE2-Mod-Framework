@@ -2,7 +2,7 @@
 
 #include <Windows.h>
 #include <mutex>
-#include <spdlog/include/spdlog/spdlog.h>
+#include <spdlog/spdlog.h>
 
 #include "utility/Address.hpp"
 #include "ReClass.hpp"
