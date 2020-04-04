@@ -1,6 +1,7 @@
 #pragma once
 
 #include <spdlog/spdlog.h>
+#include <imgui.h>
 
 class Mods;
 class REGlobals;
@@ -50,6 +51,7 @@ public:
     void on_direct_input_keys(const std::array<uint8_t, 256>& keys);
 
     void save_config();
+    static void setup_style(ImGuiStyle &st);
 
 private:
     void draw_ui();

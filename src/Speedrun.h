@@ -5,33 +5,31 @@
 #include <chrono>
 #include "Mod.hpp"
 
-using namespace std;
-
 class Speedrun : public Mod {
 public:
-    [[nodiscard]] std::string_view getName() const override { return "Speedrun"; }
+    [[nodiscard]] std::string_view get_name() const override { return "Speedrun"; }
 
-    std::optional<std::string> onInitialize() override;
+    std::optional<std::string> on_initialize() override;
 
-    void onFrame() override;
+    void on_frame() override;
 
-    void onDrawUI() override;
+    void on_draw_ui() override;
 
-    void onConfigLoad(const utility::Config &cfg) override;
+    void on_config_load(const utility::Config &cfg) override;
 
-    void onConfigSave(utility::Config &cfg) override;
+    void on_config_save(utility::Config &cfg) override;
 
     static void reset();
 
-    void drawStats();
+    void draw_stats();
 
-    static void drawIngameTime(REBehavior *clock);
+    static void draw_ingame_time(REBehavior *clock);
 
-    static void drawHealth(REBehavior *health, const bool draw_health = true);
+    static void draw_health(REBehavior *player, bool draw_health = true);
 
-    static void drawGameRank(REBehavior *rank);
+    static void draw_game_rank(REBehavior *rank);
 
-    static void drawEnemies(RopewayEnemyManager *enemies, const bool draw_bg = true);
+    static void draw_enemies(RopewayEnemyManager *enemy_manager, bool draw_bg = true);
 
 private:
     constexpr static const int COLUMNS = 5;
@@ -39,7 +37,17 @@ private:
 
     int info_order[4] = {1, 2, 3, 4};
 
-    static const int windowFlags(const bool locked) {
+#ifdef RE3
+    constexpr static const auto PREFIX = "offline.";
+#else
+    constexpr static const auto PREFIX = "app.ropeway.";
+#endif
+
+    static auto make_name(const std::string& key) {
+        return fmt::format("{}{}", PREFIX, key);
+    }
+
+    static int windowFlags(const bool locked) {
         auto base_flags = ImGuiWindowFlags_AlwaysAutoResize |
                           ImGuiWindowFlags_NoDecoration |
                           ImGuiWindowFlags_NoBackground |
@@ -49,14 +57,14 @@ private:
         return (locked) ? base_flags | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoInputs : base_flags;
     }
 
-    const ModToggle::Ptr locked{ModToggle::create(generateName("Lock Window"), true)};
-    const ModToggle::Ptr enabled{ModToggle::create(generateName("Enabled"), false)};
-    const ModToggle::Ptr ingame{ModToggle::create(generateName("In Game Time"), true)};
-    const ModToggle::Ptr health{ModToggle::create(generateName("Health"), true)};
-    const ModToggle::Ptr game_rank{ModToggle::create(generateName("Rank"), true)};
-    const ModToggle::Ptr local_enemies{ModToggle::create(generateName("Local Enemies"), true)};
-    const ModToggle::Ptr health_bar{ModToggle::create(generateName("Health Bar"), true)};
-    const ModToggle::Ptr colored_buttons{ModToggle::create(generateName("Colored Backgrounds for Enemy Health"), true)};
-    const ModKey::Ptr reset_btn{ModKey::create(generateName("reset"), DIKEYBOARD_F9)};
+    const ModToggle::Ptr locked{ModToggle::create(generate_name("Lock Window"), true)};
+    const ModToggle::Ptr enabled{ModToggle::create(generate_name("Enabled"), false)};
+    const ModToggle::Ptr ingame{ModToggle::create(generate_name("In Game Time"), true)};
+    const ModToggle::Ptr health{ModToggle::create(generate_name("Health"), true)};
+    const ModToggle::Ptr game_rank{ModToggle::create(generate_name("Rank"), true)};
+    const ModToggle::Ptr local_enemies{ModToggle::create(generate_name("Local Enemies"), true)};
+    const ModToggle::Ptr health_bar{ModToggle::create(generate_name("Health Bar"), true)};
+    const ModToggle::Ptr colored_buttons{ModToggle::create(generate_name("Colored Backgrounds for Enemy Health"), true)};
+    const ModKey::Ptr reset_btn{ModKey::create(generate_name("reset"), DIKEYBOARD_F9)};
 
 };

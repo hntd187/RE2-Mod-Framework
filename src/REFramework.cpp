@@ -267,7 +267,7 @@ bool REFramework::initialize() {
 
     ImGui::StyleColorsDark();
     ImGuiStyle &st = ImGui::GetStyle();
-    setupStyle(st);
+    setup_style(st);
 
 
     if (m_first_frame) {
@@ -317,7 +317,7 @@ void REFramework::cleanup_render_target() {
     }
 }
 
-const static void setupStyle(ImGuiStyle &st) {
+void REFramework::setup_style(ImGuiStyle &st) {
     st.FrameBorderSize = 1.0f;
     st.FramePadding = ImVec2(4.0f, 2.0f);
     st.ItemSpacing = ImVec2(8.0f, 2.0f);

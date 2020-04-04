@@ -13,20 +13,20 @@ const static std::stringstream &display(std::stringstream &os, std::chrono::nano
     auto m = std::chrono::duration_cast<std::chrono::minutes>(ns);
     ns -= m;
     auto s = std::chrono::duration_cast<std::chrono::seconds>(ns);
-    os << setw(2) << h.count() << "h:"
-       << setw(2) << m.count() << "m:"
-       << setw(2) << s.count() << 's';
+    os << std::setw(2) << h.count() << "h:"
+       << std::setw(2) << m.count() << "m:"
+       << std::setw(2) << s.count() << 's';
     os.fill(fill);
     return os;
 }
 
-const static chrono::nanoseconds get_nanos(REManagedObject *bh, const string &key) {
-    const auto t = utility::REManagedObject::getField<uint64_t>(bh, key);
-    const auto m = chrono::duration(chrono::microseconds(t));
-    return chrono::duration_cast<chrono::nanoseconds>(m);
+static std::chrono::nanoseconds get_nanos(REManagedObject *bh, const std::string &key) {
+    const auto t = utility::re_managed_object::get_field<uint64_t>(bh, key);
+    const auto m = std::chrono::duration(std::chrono::microseconds(t));
+    return std::chrono::duration_cast<std::chrono::nanoseconds>(m);
 }
 
-const static ImColor createColor(const float i) {
+static ImColor createColor(const float i) {
     if (i >= 1.0f) {
         return IM_COL32(37, 97, 68, 255);
     } else if (i < 1.0f && i >= 0.66f) {
@@ -39,7 +39,7 @@ const static ImColor createColor(const float i) {
     return IM_COL32(136, 1, 27, 255);
 }
 
-const static void makeButton(const float ratio, const bool draw_bg) {
+static void makeButton(const float ratio, const bool draw_bg) {
     const ImColor color = createColor(ratio);
     if (draw_bg) {
         ImGui::PushStyleColor(ImGuiCol_Button, (ImU32) color);
@@ -50,22 +50,22 @@ const static void makeButton(const float ratio, const bool draw_bg) {
     }
 }
 
-std::optional<std::string> Speedrun::onInitialize() {
-    return Mod::onInitialize();
+std::optional<std::string> Speedrun::on_initialize() {
+    return Mod::on_initialize();
 }
 
-void Speedrun::onFrame() {
-    if (reset_btn->isKeyDownOnce()) {
+void Speedrun::on_frame() {
+    if (reset_btn->is_key_down_once()) {
         return reset();
     }
     if (enabled->value()) {
-        drawStats();
+        draw_stats();
     }
 }
 
-void Speedrun::onDrawUI() {
+void Speedrun::on_draw_ui() {
     ImGui::SetNextTreeNodeOpen(false, ImGuiCond_::ImGuiCond_FirstUseEver);
-    if (!ImGui::CollapsingHeader(getName().data())) {
+    if (!ImGui::CollapsingHeader(get_name().data())) {
         return;
     }
     enabled->draw("Enabled");
@@ -110,68 +110,68 @@ void Speedrun::onDrawUI() {
     }
 }
 
-void Speedrun::onConfigLoad(const utility::Config &cfg) {
-    enabled->configLoad(cfg);
-    ingame->configLoad(cfg);
-    health->configLoad(cfg);
-    game_rank->configLoad(cfg);
-    local_enemies->configLoad(cfg);
-    reset_btn->configLoad(cfg);
+void Speedrun::on_config_load(const utility::Config &cfg) {
+    enabled->config_load(cfg);
+    ingame->config_load(cfg);
+    health->config_load(cfg);
+    game_rank->config_load(cfg);
+    local_enemies->config_load(cfg);
+    reset_btn->config_load(cfg);
 }
 
-void Speedrun::onConfigSave(utility::Config &cfg) {
-    enabled->configSave(cfg);
-    ingame->configSave(cfg);
-    health->configSave(cfg);
-    game_rank->configSave(cfg);
-    local_enemies->configSave(cfg);
-    reset_btn->configSave(cfg);
+void Speedrun::on_config_save(utility::Config &cfg) {
+    enabled->config_save(cfg);
+    ingame->config_save(cfg);
+    health->config_save(cfg);
+    game_rank->config_save(cfg);
+    local_enemies->config_save(cfg);
+    reset_btn->config_save(cfg);
 }
 
-void Speedrun::drawStats() {
-
-    auto &globals = *g_framework->getGlobals();
-    auto clock = globals.get<REBehavior>("app.ropeway.GameClock");
+void Speedrun::draw_stats() {
+    auto &globals = *g_framework->get_globals();
+    auto clock = globals.get<REBehavior>(make_name("GameClock"));
     auto system_time_nanos = get_nanos(clock, "SystemElapsedTime");
     ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowSize(ImVec2(500, 500), ImGuiCond_FirstUseEver);
     ImGui::Begin("", &enabled->value(), windowFlags(locked->value()));
     ImGui::LabelText("System Time", "%lld", system_time_nanos.count());
     ImGui::Separator();
-    for (auto i = 0; i < 4; i++) {
-        switch (info_order[i]) {
+    for (int i : info_order) {
+        switch (i) {
             case 1:
-                if (ingame->value()) drawIngameTime(clock);
+                if (ingame->value()) draw_ingame_time(clock);
                 continue;
             case 2:
                 if (health->value()) {
-                    auto player = globals.get<REBehavior>("app.ropeway.PlayerManager");
-                    drawHealth(player, health_bar->value());
+                    auto player = globals.get<REBehavior>(make_name("PlayerManager"));
+                    draw_health(player, health_bar->value());
                 }
                 continue;
             case 3:
                 if (game_rank->value()) {
-                    auto rank = globals.get<REBehavior>("app.ropeway.GameRankSystem");
-                    drawGameRank(rank);
+                    auto rank = globals.get<REBehavior>(make_name("GameRankSystem"));
+                    draw_game_rank(rank);
                 }
                 continue;
             case 4:
                 if (local_enemies->value()) {
-                    auto enemy_manager = globals.get<RopewayEnemyManager>("app.ropeway.EnemyManager");
-                    drawEnemies(enemy_manager, colored_buttons->value());
+                    auto enemy_manager = globals.get<RopewayEnemyManager>(make_name("EnemyManager"));
+                    draw_enemies(enemy_manager, colored_buttons->value());
+                }
+                continue;
+            default:
+                if (enabled->value() && !ingame->value() && !health->value() && !game_rank->value() &&
+                    !local_enemies->value()) {
+                    ImGui::Text("You disabled everything, but left the overlay enabled.");
                 }
                 continue;
         }
-        if (enabled->value() && !ingame->value() && !health->value() && !game_rank->value() &&
-            !local_enemies->value()) {
-            ImGui::Text("You disabled everything, but left the overlay enabled.");
-        }
-
     }
     ImGui::End();
 }
 
-void Speedrun::drawIngameTime(REBehavior *clock) {
+void Speedrun::draw_ingame_time(REBehavior *clock) {
     auto actual_time_nanos = get_nanos(clock, "ActualRecordTime");
     auto inv_time_nanos = get_nanos(clock, "InventorySpendingTime");
 
@@ -183,10 +183,10 @@ void Speedrun::drawIngameTime(REBehavior *clock) {
     ImGui::LabelText("Inventory Time", "%s", o.data());
 }
 
-void Speedrun::drawHealth(REBehavior *player, const bool draw_health) {
-    auto player_condition = utility::REManagedObject::getField<REBehavior *>(player, "CurrentPlayerCondition");
-    auto current_health = utility::REManagedObject::getField<signed int>(player_condition, "CurrentHitPoint");
-    auto current_pct = utility::REManagedObject::getField<float>(player_condition, "HitPointPercentage");
+void Speedrun::draw_health(REBehavior *player, const bool draw_health) {
+    auto player_condition = utility::re_managed_object::get_field<REBehavior *>(player, "CurrentPlayerCondition");
+    auto current_health = utility::re_managed_object::get_field<signed int>(player_condition, "CurrentHitPoint");
+    auto current_pct = utility::re_managed_object::get_field<float>(player_condition, "HitPointPercentage");
 
     ImGui::LabelText("Current Health", "%i", current_health);
     ImGui::LabelText("Current Pct", "%0.f%%", current_pct);
@@ -196,34 +196,34 @@ void Speedrun::drawHealth(REBehavior *player, const bool draw_health) {
     }
 }
 
-void Speedrun::drawGameRank(REBehavior *rank) {
-    auto rank_points = utility::REManagedObject::getField<float>(rank, "RankPoint");
-    auto current_rank = utility::REManagedObject::getField<signed int>(rank, "GameRank");
+void Speedrun::draw_game_rank(REBehavior *rank) {
+    auto rank_points = utility::re_managed_object::get_field<float>(rank, "RankPoint");
+    auto current_rank = utility::re_managed_object::get_field<signed int>(rank, "GameRank");
 
     ImGui::LabelText("Current Rank", "%i", current_rank);
     ImGui::LabelText("Rank Points", "%1.f", rank_points);
 }
 
-void Speedrun::drawEnemies(RopewayEnemyManager *enemy_manager, const bool draw_bg) {
+void Speedrun::draw_enemies(RopewayEnemyManager *enemy_manager, const bool draw_bg) {
     if (enemy_manager != nullptr) {
         auto enemy_controllers = enemy_manager->enemyControllers;
         if (enemy_controllers != nullptr && enemy_controllers->data != nullptr) {
             ImGui::Columns(COLUMNS, "Health", false);
 
             for (auto i = 0; i < enemy_controllers->data->numElements; ++i) {
-                auto ec = utility::REArray::getElement<RopewayEnemyController>(enemy_controllers->data, i);
+                auto ec = utility::re_array::get_element<RopewayEnemyController>(enemy_controllers->data, i);
                 REBehavior *hitpoint_controller = nullptr;
                 if (ec == nullptr) break;
-                if (!utility::REManagedObject::isManagedObject(ec)) continue;
+                if (!utility::re_managed_object::is_managed_object(ec)) continue;
                 for (auto c = ec->childComponent; c != nullptr && c != ec; c = c->childComponent) {
-                    if (utility::REManagedObject::isA(c, "app.ropeway.HitPointController")) {
+                    if (utility::re_managed_object::is_a(c, "HitPointController")) {
                         hitpoint_controller = (REBehavior *) c;
                         break;
                     }
                 }
                 if (hitpoint_controller == nullptr) continue;
                 auto region = ImGui::GetContentRegionAvail();
-                auto ratio = utility::REManagedObject::getField<float>(hitpoint_controller, "HitPointRatio");
+                auto ratio = utility::re_managed_object::get_field<float>(hitpoint_controller, "HitPointRatio");
                 makeButton(ratio, draw_bg);
                 if ((i % COLUMNS) != 0) ImGui::SameLine((i * region.x) / COLUMNS);
                 ImGui::NextColumn();
@@ -236,16 +236,16 @@ void Speedrun::drawEnemies(RopewayEnemyManager *enemy_manager, const bool draw_b
 }
 
 void Speedrun::reset() {
-    auto &globals = *g_framework->getGlobals();
-    auto rank = globals.get<REBehavior>("app.ropeway.gamemastering.MainFlowManager");
-    auto inGame = utility::REManagedObject::getField<signed int>(rank, "IsInGame");
-    auto gameOver = utility::REManagedObject::getField<signed int>(rank, "IsInGameOver");
-    auto resetTitle = utility::REManagedObject::getField<signed int>(rank, "IsInResetTitle");
-    auto wakeUp = utility::REManagedObject::getField<signed int>(rank, "IsInWakeUp");
+    auto &globals = *g_framework->get_globals();
+    auto rank = globals.get<REBehavior>(make_name("gamemastering.MainFlowManager"));
+    auto inGame = utility::re_managed_object::get_field<signed int>(rank, "IsInGame");
+    auto gameOver = utility::re_managed_object::get_field<signed int>(rank, "IsInGameOver");
+    auto resetTitle = utility::re_managed_object::get_field<signed int>(rank, "IsInResetTitle");
+    auto wakeUp = utility::re_managed_object::get_field<signed int>(rank, "IsInWakeUp");
 
     if (inGame && !gameOver) {
         spdlog::info("inGame: {}, gameOver: {}, resetTitle: {}, wakeUp: {}", inGame, gameOver, resetTitle, wakeUp);
-        utility::REManagedObject::getField<REComponent *>(rank, "goResetGameToTitle");
+        utility::re_managed_object::get_field<REComponent *>(rank, "goResetGameToTitle");
     }
 }
 

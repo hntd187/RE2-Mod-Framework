@@ -24,7 +24,7 @@ namespace utility::re_array {
             return nullptr;
         }             
 
-        auto data = Address{ REManagedObject::get_field_ptr(container) };
+        auto data = Address{ re_managed_object::get_field_ptr(container) };
         return data.get(container->info->classInfo->elementSize * idx).as<T*>();
     }
 
@@ -34,7 +34,7 @@ namespace utility::re_array {
             return nullptr;
         }
 
-        T** data = (T**)REManagedObject::get_field_ptr(container);
+        T** data = (T**)re_managed_object::get_field_ptr(container);
         return data[idx];
     }
 

@@ -14,6 +14,8 @@ set(MODS_SRC
     DeveloperTools.cpp
 	ObjectExplorer.hpp
     ObjectExplorer.cpp
+	IntegrityCheckBypass.hpp
+	IntegrityCheckBypass.cpp
 	Speedrun.h
 	Speedrun.cpp
 )
