@@ -9,23 +9,24 @@ namespace utility {
     //
 
     // Conversion functions for UTF8<->UTF16.
-    std::string narrow(std::wstring_view str);
-    std::wstring widen(std::string_view str);
+    std::string narrow(std::wstring_view std);
+    std::wstring widen(std::string_view std);
 
-    static constexpr unsigned int Fnv1aBasis = 0x811C9DC5;
-    static constexpr unsigned int Fnv1aPrime = 0x01000193;
+    std::string format_string(const char* format, va_list args);
+    
+    // FNV-1a
+    static constexpr auto hash(std::string_view data) {
+        size_t result = 0xcbf29ce484222325;
 
-    constexpr unsigned int hashFnv1a(const char *s, unsigned int h = Fnv1aBasis)
-    {
-        return !*s ? h : hashFnv1a(s + 1, (h ^ *s) * Fnv1aPrime);
-    }
+        for (char c : data) {
+            result ^= c;
+            result *= (size_t)1099511628211;
+        }
 
-    constexpr unsigned int hashFnv1b(const char *s, unsigned int h = Fnv1aBasis)
-    {
-        return !*s ? h : hashFnv1b(s + 1, static_cast<unsigned int>((h ^ *s) * static_cast<unsigned long long>(Fnv1aPrime)));
+        return result;
     }
 }
 
-constexpr auto operator "" _fnv(const char* s, size_t) -> unsigned {
-    return static_cast<unsigned>(utility::hashFnv1a(s));
+constexpr auto operator "" _fnv(const char* s, size_t) {
+    return utility::hash(s);
 }

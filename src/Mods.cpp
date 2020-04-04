@@ -1,47 +1,59 @@
 #include <spdlog/spdlog.h>
 
+#include "IntegrityCheckBypass.hpp"
 #include "PositionHooks.hpp"
+#include "FirstPerson.hpp"
 #include "DeveloperTools.hpp"
-#include "Speedrun.h"
+#include "ManualFlashlight.hpp"
+#include "FreeCam.hpp"
+
 #include "Mods.hpp"
 
-Mods::Mods() {
-    m_mods.emplace_back(std::make_unique<Speedrun>());
+Mods::Mods()
+{
+#ifdef RE3
+    m_mods.emplace_back(std::make_unique<IntegrityCheckBypass>());
+#endif
+
+    m_mods.emplace_back(std::make_unique<PositionHooks>());
+    m_mods.emplace_back(std::make_unique<FirstPerson>());
+    m_mods.emplace_back(std::make_unique<ManualFlashlight>());
+    m_mods.emplace_back(std::make_unique<FreeCam>());
 
 #ifdef DEVELOPER
     m_mods.emplace_back(std::make_unique<DeveloperTools>());
 #endif
 }
 
-std::optional<std::string> Mods::onInitialize() const {
-    for (auto &mod : m_mods) {
-        spdlog::info("{:s}::onInitialize()", mod->getName().data());
+std::optional<std::string> Mods::on_initialize() const {
+    for (auto& mod : m_mods) {
+        spdlog::info("{:s}::on_initialize()", mod->get_name().data());
 
-        if (auto e = mod->onInitialize(); e != std::nullopt) {
-            spdlog::info("{:s}::onInitialize() has failed: {:s}", mod->getName().data(), *e);
+        if (auto e = mod->on_initialize(); e != std::nullopt) {
+            spdlog::info("{:s}::on_initialize() has failed: {:s}", mod->get_name().data(), *e);
             return e;
         }
     }
 
-    utility::Config cfg{"re2_fw_config.txt"};
+    utility::Config cfg{ "re2_fw_config.txt" };
 
-    for (auto &mod : m_mods) {
-        spdlog::info("{:s}::onConfigLoad()", mod->getName().data());
-        mod->onConfigLoad(cfg);
+    for (auto& mod : m_mods) {
+        spdlog::info("{:s}::on_config_load()", mod->get_name().data());
+        mod->on_config_load(cfg);
     }
 
     return std::nullopt;
 }
 
-void Mods::onFrame() const {
-    for (auto &mod : m_mods) {
-        mod->onFrame();
+void Mods::on_frame() const {
+    for (auto& mod : m_mods) {
+        mod->on_frame();
     }
 }
 
-void Mods::onDrawUI() const {
-    for (auto &mod : m_mods) {
-        mod->onDrawUI();
+void Mods::on_draw_ui() const {
+    for (auto& mod : m_mods) {
+        mod->on_draw_ui();
     }
 }
 

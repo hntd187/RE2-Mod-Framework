@@ -21,15 +21,21 @@ set(MODS_SRC
 set(SDK_SRC
     sdk/ReClass.hpp
     sdk/ReClass_Internal.hpp
+    sdk/ReClass_Internal_RE3.hpp
     sdk/Enums_Internal.hpp
 
     sdk/REArray.hpp
     sdk/REComponent.hpp
+    sdk/REContext.hpp
+    sdk/REContext.cpp
     sdk/REGlobals.hpp
     sdk/REGlobals.cpp
     sdk/REManagedObject.hpp
+    sdk/REMath.hpp
     sdk/REString.hpp
     sdk/RETransform.hpp
+    sdk/RETypes.hpp
+    sdk/RETypes.cpp
     sdk/RopewaySweetLightManager.hpp
 )
 
@@ -97,7 +103,13 @@ set_target_properties(RE2 PROPERTIES OUTPUT_NAME dinput8)
 
 string(REGEX REPLACE "/MD" "/MT" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 option(DEVELOPER_MODE "Adds DeveloperTools option to menu" OFF)
+option(RE3 "RE3 build" OFF)
 
 if(DEVELOPER_MODE)
 	target_compile_definitions(RE2 PUBLIC DEVELOPER)
+    target_compile_options(RE2 PUBLIC /EHa)
+endif()
+
+if (RE3)
+    target_compile_definitions(RE2 PUBLIC RE3)
 endif()
