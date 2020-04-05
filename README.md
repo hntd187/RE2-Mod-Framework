@@ -12,3 +12,4 @@ Extract dinput8.dll into your RE2 folder.
 DirectX 12 is not supported. A gallery of screenshots can be found [here](https://imgur.com/a/y2dZaKD).
 
 [![SS](https://i.imgur.com/C5pQcTf.jpg)](https://i.imgur.com/C5pQcTf.jpg)
+[![RE3](https://i.imgur.com/3ueHkQb.jpg)](https://i.imgur.com/3ueHkQb.jpg)
