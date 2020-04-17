@@ -76,6 +76,9 @@ set(FRAMEWORK_SRC
     Mods.cpp
     REFramework.hpp
     REFramework.cpp
+	#		RenderHook.h
+	#		D3D12Hook.cpp
+	#		D3D12Hook.h
 )
 
 source_group("re2-imgui" FILES ${RE2IMGUI_SRC})

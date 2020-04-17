@@ -10,3 +10,6 @@
 [submodule "dependencies/glm"]
 	path = dependencies/glm
 	url = https://github.com/g-truc/glm
+[submodule "dependencies/simpleini"]
+	path = dependencies/simpleini
+	url = https://github.com/brofield/simpleini.git

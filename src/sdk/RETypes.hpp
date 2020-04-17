@@ -12,7 +12,7 @@ std::string game_namespace(std::string_view base_name);
 class RETypes {
 public:
     RETypes();
-    virtual ~RETypes() {};
+    virtual ~RETypes() = default;
 
     const auto& get_raw_types() const {
         return m_raw_types;

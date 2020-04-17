@@ -2,6 +2,7 @@
 
 // Game can't use virtual keys unless the menu is open.
 #define DIRECTINPUT_VERSION 0x0800
+
 #include <dinput.h>
 
 #include <vector>
@@ -19,15 +20,19 @@ class IModValue {
 public:
     using Ptr = std::unique_ptr<IModValue>;
 
-    virtual ~IModValue() {};
+    virtual ~IModValue() = default;
+
     virtual bool draw(std::string_view name) = 0;
+
     virtual void draw_value(std::string_view name) = 0;
-    virtual void config_load(const utility::Config& cfg) = 0;
-    virtual void config_save(utility::Config& cfg) = 0;
+
+    virtual void config_load(const utility::Config &cfg) = 0;
+
+    virtual void config_save(utility::Config &cfg) = 0;
 };
 
 // Convenience classes for imgui
-template <typename T>
+template<typename T>
 class ModValue : public IModValue {
 public:
     using Ptr = std::unique_ptr<ModValue<T>>;
@@ -36,15 +41,14 @@ public:
         return std::make_unique<ModValue<T>>(config_name, default_value);
     }
 
-    ModValue(std::string_view config_name, T default_value) 
-        : m_config_name{ config_name },
-        m_value{ default_value }
-    {
+    ModValue(std::string_view config_name, T default_value)
+            : m_config_name{config_name},
+              m_value{default_value} {
     }
 
-    virtual ~ModValue() override {};
+    ~ModValue() override = default;;
 
-    virtual void config_load(const utility::Config& cfg) override {
+    void config_load(const utility::Config &cfg) override {
         auto v = cfg.get<T>(m_config_name);
 
         if (v) {
@@ -52,34 +56,33 @@ public:
         }
     };
 
-    virtual void config_save(utility::Config& cfg) override {
+    void config_save(utility::Config &cfg) override {
         cfg.set<T>(m_config_name, m_value);
     };
 
-    operator T&() {
+    explicit operator T &() {
         return m_value;
     }
 
-    T& value() {
+    T &value() {
         return m_value;
     }
 
-    const auto& get_config_name() const {
+    [[nodiscard]] const auto &get_config_name() const {
         return m_config_name;
     }
 
 protected:
     T m_value{};
-    std::string m_config_name{ "Default_ModValue" };
+    std::string m_config_name{"Default_ModValue"};
 };
 
 class ModToggle : public ModValue<bool> {
 public:
     using Ptr = std::unique_ptr<ModToggle>;
 
-    ModToggle(std::string_view config_name, bool default_value) 
-        : ModValue<bool>{ config_name, default_value } 
-    { 
+    ModToggle(std::string_view config_name, bool default_value)
+            : ModValue<bool>{config_name, default_value} {
     }
 
     static auto create(std::string_view config_name, bool default_value = false) {
@@ -107,8 +110,8 @@ class ModFloat : public ModValue<float> {
 public:
     using Ptr = std::unique_ptr<ModFloat>;
 
-    ModFloat(std::string_view config_name, float default_value) 
-        : ModValue<float>{ config_name, default_value } { }
+    ModFloat(std::string_view config_name, float default_value)
+            : ModValue<float>{config_name, default_value} {}
 
     static auto create(std::string_view config_name, float default_value = 0.0f) {
         return std::make_unique<ModFloat>(config_name, default_value);
@@ -135,10 +138,9 @@ public:
         return std::make_unique<ModSlider>(config_name, mn, mx, default_value);
     }
 
-    ModSlider(std::string_view config_name, float mn = 0.0f, float mx = 1.0f, float default_value = 0.0f)
-        : ModFloat{ config_name, default_value },
-        m_range{ mn, mx }
-    {
+    explicit ModSlider(std::string_view config_name, float mn = 0.0f, float mx = 1.0f, float default_value = 0.0f)
+            : ModFloat{config_name, default_value},
+              m_range{mn, mx} {
     }
 
     bool draw(std::string_view name) override {
@@ -153,12 +155,12 @@ public:
         ImGui::Text("%s: %f [%f, %f]", name.data(), m_value, m_range.x, m_range.y);
     }
 
-    auto& range() {
+    auto &range() {
         return m_range;
     }
 
 protected:
-    Vector2f m_range{ 0.0f, 1.0f };
+    Vector2f m_range{0.0f, 1.0f};
 };
 
 class ModInt32 : public ModValue<int32_t> {
@@ -169,9 +171,8 @@ public:
         return std::make_unique<ModInt32>(config_name, default_value);
     }
 
-    ModInt32(std::string_view config_name, uint32_t default_value = 0)
-        : ModValue{ config_name, static_cast<int>(default_value) }
-    {
+    explicit ModInt32(std::string_view config_name, uint32_t default_value = 0)
+            : ModValue{config_name, static_cast<int>(default_value)} {
     }
 
     bool draw(std::string_view name) override {
@@ -187,7 +188,7 @@ public:
     }
 };
 
-class ModKey: public ModInt32 {
+class ModKey : public ModInt32 {
 public:
     using Ptr = std::unique_ptr<ModKey>;
 
@@ -195,9 +196,8 @@ public:
         return std::make_unique<ModKey>(config_name, default_value);
     }
 
-    ModKey(std::string_view config_name, int32_t default_value = UNBOUND_KEY)
-        : ModInt32{ config_name, static_cast<uint32_t>(default_value) }
-    {
+    explicit ModKey(std::string_view config_name, int32_t default_value = UNBOUND_KEY)
+            : ModInt32{config_name, static_cast<uint32_t>(default_value)} {
     }
 
     bool draw(std::string_view name) override {
@@ -209,7 +209,7 @@ public:
         ImGui::Button(name.data());
 
         if (ImGui::IsItemHovered()) {
-            auto& keys = g_framework->get_keyboard_state();
+            auto &keys = g_framework->get_keyboard_state();
 
             for (auto k = 0; k < keys.size(); ++k) {
                 if (keys[k]) {
@@ -220,14 +220,16 @@ public:
 
             ImGui::SameLine();
             ImGui::Text("Press any key");
-        }
-        else {
+        } else {
             ImGui::SameLine();
 
             if (m_value >= 0 && m_value <= 255) {
-                ImGui::Text("%i", m_value);
-            }
-            else {
+                unsigned int scanCode = MapVirtualKey(m_value, MAPVK_VK_TO_CHAR);
+                char keyName[50];
+                GetKeyNameText(scanCode << 16, keyName, sizeof(keyName));
+
+                ImGui::Text("%s", keyName);
+            } else {
                 ImGui::Text("Not bound");
             }
         }
@@ -237,12 +239,12 @@ public:
         return true;
     }
 
-    bool is_key_down() const {
+    [[nodiscard]] bool is_key_down() const {
         if (m_value < 0 || m_value > 255) {
             return false;
         }
 
-        return g_framework->get_keyboard_state()[(uint8_t)m_value] != 0;
+        return g_framework->get_keyboard_state()[(uint8_t) m_value] != 0;
     }
 
     bool is_key_down_once() {
@@ -260,21 +262,21 @@ public:
         return false;
     }
 
-    bool is_erase_key(int k) const {
+    [[nodiscard]] bool is_erase_key(int k) const {
         switch (k) {
-        case DIK_ESCAPE:
-        case DIK_BACKSPACE:
-            return true;
+            case DIK_ESCAPE:
+            case DIK_BACKSPACE:
+                return true;
 
-        default:
-            return false;
+            default:
+                return false;
         }
     }
 
     static constexpr int32_t UNBOUND_KEY = -1;
 
 protected:
-    bool m_was_key_down{ false };
+    bool m_was_key_down{false};
 };
 
 class Mod {
@@ -282,11 +284,12 @@ protected:
     using ValueList = std::vector<std::reference_wrapper<IModValue>>;
 
 public:
-    virtual ~Mod() {};
-    virtual std::string_view get_name() const { return "UnknownMod"; };
+    virtual ~Mod() = default;;
+
+    [[nodiscard]] virtual std::string_view get_name() const { return "UnknownMod"; };
 
     // can be used for ModValues, like Mod_ValueName
-    virtual std::string generate_name(std::string_view name) { return std::string{ get_name() } + "_" + name.data(); }
+    virtual std::string generate_name(std::string_view name) { return std::string{get_name()} + "_" + name.data(); }
 
     // Called when REFramework::initialize finishes in the first render frame
     // Returns an error string if it fails
@@ -294,17 +297,24 @@ public:
 
     // Functionally equivalent, but on_frame will always get called, on_draw_ui can be disabled by REFramework
     virtual void on_frame() {};
+
     virtual void on_draw_ui() {};
 
-    virtual void on_config_load(const utility::Config& cfg) {};
-    virtual void on_config_save(utility::Config& cfg) {};
+    virtual void on_config_load(const utility::Config &cfg) {};
+
+    virtual void on_config_save(utility::Config &cfg) {};
 
     // Game-specific callbacks
-    virtual void on_pre_update_transform(RETransform* transform) {};
-    virtual void on_update_transform(RETransform* transform) {};
-    virtual void on_pre_update_camera_controller(RopewayPlayerCameraController* controller) {};
-    virtual void on_update_camera_controller(RopewayPlayerCameraController* controller) {};
-    virtual void on_pre_update_camera_controller2(RopewayPlayerCameraController* controller) {};
-    virtual void on_update_camera_controller2(RopewayPlayerCameraController* controller) {};
+    virtual void on_pre_update_transform(RETransform *transform) {};
+
+    virtual void on_update_transform(RETransform *transform) {};
+
+    virtual void on_pre_update_camera_controller(RopewayPlayerCameraController *controller) {};
+
+    virtual void on_update_camera_controller(RopewayPlayerCameraController *controller) {};
+
+    virtual void on_pre_update_camera_controller2(RopewayPlayerCameraController *controller) {};
+
+    virtual void on_update_camera_controller2(RopewayPlayerCameraController *controller) {};
 };
 

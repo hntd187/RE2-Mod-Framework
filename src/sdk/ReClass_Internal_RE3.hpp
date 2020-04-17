@@ -2477,7 +2477,7 @@ class RopewayEnemyManager : public REBehavior
 public:
     char pad_0048[8]; //0x0048
     class DotNetGenericList* enemyInfos; //0x0050 app.ropeway.EnemyManager.RegisterEnemyInfo
-    class DotNetGenericList* enemyControllers; //0x0058
+    class DotNetGenericDictionary* enemyControllers; //0x0058
     class DotNetGenericList* gameObjects; //0x0060
     bool isExistEnemyObject; //0x0068
     char pad_0069[3]; //0x0069

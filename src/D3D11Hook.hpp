@@ -18,8 +18,8 @@ public:
     bool hook();
     bool unhook();
 
-    void on_present(OnPresentFn fn) { m_on_present = fn; }
-    void on_resize_buffers(OnResizeBuffersFn fn) { m_on_resize_buffers = fn; }
+    void on_present(OnPresentFn fn) { m_on_present = std::move(fn); }
+    void on_resize_buffers(OnResizeBuffersFn fn) { m_on_resize_buffers = std::move(fn); }
 
     ID3D11Device* get_device() { return m_device; }
     IDXGISwapChain* get_swap_chain() { return m_swap_chain; }

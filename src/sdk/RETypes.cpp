@@ -1,7 +1,6 @@
 #include <spdlog/spdlog.h>
 
 #include "utility/Scan.hpp"
-#include "utility/Module.hpp"
 
 #include "REFramework.hpp"
 #include "RETypes.hpp"
@@ -46,7 +45,7 @@ RETypes::RETypes() {
             continue;
         }
 
-        spdlog::info("{:s}", name);
+//        spdlog::info("{:s}", name);
 
         m_type_map[name] = t;
         m_types.insert(t);

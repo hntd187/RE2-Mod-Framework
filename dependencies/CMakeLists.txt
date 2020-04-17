@@ -28,3 +28,10 @@ add_library(imgui STATIC
             imgui/imgui_widgets.cpp
             imgui/imgui_draw.cpp
             imgui/imgui.cpp)
+
+project(simpleini)
+add_library(simpleini STATIC
+        simpleini/SimpleIni.h
+        simpleini/ConvertUTF.c
+        simpleini/ConvertUTF.h
+        )

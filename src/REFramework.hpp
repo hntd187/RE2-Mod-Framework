@@ -45,6 +45,9 @@ public:
         return m_game_data_initialized;
     }
 
+    bool initialize_dx12();
+    void on_frame_dx12();
+
     void on_frame();
     void on_reset();
     bool on_message(HWND wnd, UINT message, WPARAM w_param, LPARAM l_param);
@@ -52,11 +55,11 @@ public:
 
     void save_config();
     static void setup_style(ImGuiStyle &st);
+    static void draw_about();
 
 private:
     void draw_ui();
-    void draw_about();
-
+    void draw_ui_dx12();
     bool initialize();
     void create_render_target();
     void cleanup_render_target();
@@ -64,7 +67,7 @@ private:
     bool m_first_frame{ true };
     bool m_valid{ false };
     bool m_initialized{ false };
-    bool m_draw_ui{ true };
+    bool m_draw_ui{ false };
     std::atomic<bool> m_game_data_initialized{ false };
 
     std::mutex m_input_mutex{};

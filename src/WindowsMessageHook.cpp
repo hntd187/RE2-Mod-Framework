@@ -28,8 +28,8 @@ LRESULT WINAPI window_proc(HWND wnd, UINT message, WPARAM w_param, LPARAM l_para
     return CallWindowProc(g_windows_message_hook->get_original(), wnd, message, w_param, l_param);
 }
 
-WindowsMessageHook::WindowsMessageHook(HWND wnd)
-    : m_wnd{ wnd },
+WindowsMessageHook::WindowsMessageHook(HWND wnd):
+    m_wnd{ wnd },
     m_original_proc{ nullptr }
 {
     spdlog::info("Initializing WindowsMessageHook");
@@ -59,7 +59,7 @@ bool WindowsMessageHook::remove() {
     }
 
     // Restore the original window procedure.
-    SetWindowLongPtr(m_wnd, GWLP_WNDPROC, (LONG_PTR)m_original_proc);
+    SetWindowLongPtr(m_wnd, GWLP_WNDPROC, (LONG_PTR) m_original_proc);
 
     // Invalidate this message hook.
     m_wnd = nullptr;

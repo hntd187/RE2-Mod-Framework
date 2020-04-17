@@ -17,10 +17,9 @@
 
 std::unique_ptr<REFramework> g_framework{};
 
-REFramework::REFramework()
-    : m_game_module{ GetModuleHandle(0) },
-    m_logger{ spdlog::basic_logger_mt("REFramework", "re2_framework_log.txt", true) }
-{
+REFramework::REFramework() :
+        m_game_module{GetModuleHandle(0)},
+        m_logger{spdlog::basic_logger_mt("REFramework", "re2_framework_log.txt", true)} {
     spdlog::set_default_logger(m_logger);
     spdlog::flush_on(spdlog::level::info);
     spdlog::info("REFramework entry");
@@ -29,9 +28,20 @@ REFramework::REFramework()
     spdlog::set_level(spdlog::level::debug);
 #endif
 
+
+//    CSimpleIniA ini;
+//    ini.LoadFile("re3_config.ini");
+//    const char *api = ini.GetValue("Render", "TargetPlatform", "DirectX11");
+
+//    if (std::strcmp(api, "DirectX11") == 0) {
+    spdlog::info("I am D3D11");
     m_d3d11_hook = std::make_unique<D3D11Hook>();
-    m_d3d11_hook->on_present([this](D3D11Hook& hook) { on_frame(); });
-    m_d3d11_hook->on_resize_buffers([this](D3D11Hook& hook) { on_reset(); });
+    m_d3d11_hook->on_present([this](D3D11Hook &hook) { on_frame(); });
+    m_d3d11_hook->on_resize_buffers([this](D3D11Hook &hook) { on_reset(); });
+//    }
+//    if (std::strcmp(api, "DirectX12") == 0) {
+//        spdlog::info("I am D3D12, sleeping 2 seconds...");
+//    }
 
     m_valid = m_d3d11_hook->hook();
 
@@ -43,14 +53,11 @@ REFramework::REFramework()
 REFramework::~REFramework() = default;
 
 void REFramework::on_frame() {
-    spdlog::debug("on_frame");
-
     if (!m_initialized) {
         if (!initialize()) {
             spdlog::error("Failed to initialize REFramework");
             return;
         }
-
         spdlog::info("REFramework initialized");
         m_initialized = true;
         return;
@@ -65,11 +72,10 @@ void REFramework::on_frame() {
     }
 
     draw_ui();
-
     ImGui::EndFrame();
     ImGui::Render();
 
-    ID3D11DeviceContext* context = nullptr;
+    ID3D11DeviceContext *context = nullptr;
     m_d3d11_hook->get_device()->GetImmediateContext(&context);
 
     context->OMSetRenderTargets(1, &m_main_render_target_view, NULL);
@@ -78,9 +84,6 @@ void REFramework::on_frame() {
 }
 
 void REFramework::on_reset() {
-    spdlog::info("Reset!");
-
-    // Crashes if we don't release it at this point.
     cleanup_render_target();
     m_initialized = false;
 }
@@ -103,9 +106,9 @@ bool REFramework::on_message(HWND wnd, UINT message, WPARAM w_param, LPARAM l_pa
 }
 
 // this is unfortunate.
-void REFramework::on_direct_input_keys(const std::array<uint8_t, 256>& keys) {
+void REFramework::on_direct_input_keys(const std::array<uint8_t, 256> &keys) {
     if (keys[m_menu_key] && m_last_keys[m_menu_key] == 0) {
-        std::lock_guard _{ m_input_mutex };
+        std::lock_guard _{m_input_mutex};
         m_draw_ui = !m_draw_ui;
 
         // Save the config if we close the UI
@@ -122,7 +125,7 @@ void REFramework::save_config() {
 
     utility::Config cfg{};
 
-    for (auto& mod : m_mods->get_mods()) {
+    for (auto &mod : m_mods->get_mods()) {
         mod->on_config_save(cfg);
     }
 
@@ -135,7 +138,7 @@ void REFramework::save_config() {
 }
 
 void REFramework::draw_ui() {
-    std::lock_guard _{ m_input_mutex };
+    std::lock_guard _{m_input_mutex};
 
     if (!m_draw_ui) {
         m_dinput_hook->acknowledge_input();
@@ -147,8 +150,7 @@ void REFramework::draw_ui() {
 
     if (io.WantCaptureKeyboard) {
         m_dinput_hook->ignore_input();
-    }
-    else {
+    } else {
         m_dinput_hook->acknowledge_input();
     }
 
@@ -164,8 +166,7 @@ void REFramework::draw_ui() {
 
     if (m_error.empty() && m_game_data_initialized) {
         m_mods->on_draw_ui();
-    }
-    else if (!m_game_data_initialized) {
+    } else if (!m_game_data_initialized) {
         ImGui::TextWrapped("REFramework is currently initializing...");
     } else if (!m_error.empty()) {
         ImGui::TextWrapped("REFramework error: %s", m_error.c_str());
@@ -178,7 +179,6 @@ void REFramework::draw_about() {
     if (!ImGui::CollapsingHeader("About")) {
         return;
     }
-
     ImGui::TreePush("About");
     ImGui::Text("Author: hntd187");
     ImGui::Text("https://github.com/hntd187/RE2-Speedrun-Overlay");
@@ -201,8 +201,6 @@ bool REFramework::initialize() {
         return true;
     }
 
-    spdlog::info("Attempting to initialize");
-
     auto device = m_d3d11_hook->get_device();
     auto swap_chain = m_d3d11_hook->get_swap_chain();
 
@@ -214,7 +212,6 @@ bool REFramework::initialize() {
 
     ID3D11DeviceContext *context = nullptr;
     device->GetImmediateContext(&context);
-
     DXGI_SWAP_CHAIN_DESC swap_desc{};
     swap_chain->GetDesc(&swap_desc);
 
@@ -230,11 +227,11 @@ bool REFramework::initialize() {
     // just do this instead of rehooking because there's no point.
     if (m_first_frame) {
         m_dinput_hook = std::make_unique<DInputHook>(m_wnd);
-    }
-    else {
+    } else {
         m_dinput_hook->set_window(m_wnd);
     }
 
+    spdlog::info("Attempting to initialize");
     spdlog::info("Creating render target");
 
     create_render_target();
@@ -249,7 +246,6 @@ bool REFramework::initialize() {
         spdlog::error("Failed to initialize ImGui.");
         return false;
     }
-
     spdlog::info("Initializing ImGui D3D11");
 
     if (!ImGui_ImplDX11_Init(device, context)) {
@@ -259,16 +255,14 @@ bool REFramework::initialize() {
 
     ImGuiIO &io = ImGui::GetIO();
     spdlog::info("Got ImGui IO");
-    ImFont *font = io.Fonts->AddFontFromMemoryCompressedTTF(DROID_compressed_data, DROID_compressed_size, 18.0);
+    ImFont *font = io.Fonts->AddFontFromMemoryCompressedTTF(DROID_compressed_data, DROID_compressed_size, 16.0);
     if (font == nullptr) {
         spdlog::error("Failed to load Droid Sans.");
     }
     spdlog::info("Loaded Droid Sans font");
 
     ImGui::StyleColorsDark();
-    ImGuiStyle &st = ImGui::GetStyle();
-    setup_style(st);
-
+    setup_style(ImGui::GetStyle());
 
     if (m_first_frame) {
         m_first_frame = false;
@@ -303,8 +297,8 @@ bool REFramework::initialize() {
 void REFramework::create_render_target() {
     cleanup_render_target();
 
-    ID3D11Texture2D* back_buffer{ nullptr };
-    if (m_d3d11_hook->get_swap_chain()->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&back_buffer) == S_OK) {
+    ID3D11Texture2D *back_buffer{nullptr};
+    if (m_d3d11_hook->get_swap_chain()->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID *) &back_buffer) == S_OK) {
         m_d3d11_hook->get_device()->CreateRenderTargetView(back_buffer, NULL, &m_main_render_target_view);
         back_buffer->Release();
     }
@@ -323,12 +317,15 @@ void REFramework::setup_style(ImGuiStyle &st) {
     st.ItemSpacing = ImVec2(8.0f, 2.0f);
     st.WindowBorderSize = 1.0f;
     st.TabBorderSize = 1.0f;
-    st.WindowRounding = 1.0f;
+    st.AntiAliasedFill = true;
+
     st.ChildRounding = 1.0f;
     st.FrameRounding = 1.0f;
-    st.ScrollbarRounding = 1.0f;
     st.GrabRounding = 1.0f;
+    st.ScrollbarRounding = 1.0f;
     st.TabRounding = 1.0f;
+    st.WindowRounding = 1.0f;
+    st.PopupRounding = 1.0f;
 
     ImVec4 *colors = ImGui::GetStyle().Colors;
     colors[ImGuiCol_Text] = ImVec4(1.00f, 1.00f, 1.00f, 0.95f);
@@ -379,4 +376,133 @@ void REFramework::setup_style(ImGuiStyle &st) {
     colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.00f, 1.00f, 1.00f, 0.70f);
     colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
     colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
+}
+
+void REFramework::on_frame_dx12() {
+
+    if (!m_initialized) {
+        if (!initialize_dx12()) {
+            spdlog::error("Failed to initialize REFramework");
+            return;
+        }
+        spdlog::info("REFramework initialized");
+        m_initialized = true;
+        return;
+    }
+    spdlog::info("Mod On Frame");
+
+    if (m_error.empty() && m_game_data_initialized) {
+        m_mods->on_frame();
+    }
+
+    spdlog::info("Draw UI");
+
+    draw_ui_dx12();
+}
+
+bool REFramework::initialize_dx12() {
+    if (m_initialized) {
+        return true;
+    }
+
+    spdlog::info("Attempting to initialize");
+    spdlog::info("Creating render target");
+
+//    m_windows_message_hook.reset();
+//    m_windows_message_hook = std::make_unique<WindowsMessageHook>(m_wnd);
+//    m_windows_message_hook->on_message = [this](auto wnd, auto msg, auto wParam, auto lParam) {
+//        return on_message(wnd, msg, wParam, lParam);
+//    };
+//
+//     just do this instead of rehooking because there's no point.
+//    if (m_first_frame) {
+//        m_dinput_hook = std::make_unique<DInputHook>(m_wnd);
+//    } else {
+//        m_dinput_hook->set_window(m_wnd);
+//    }
+
+    spdlog::info("Initializing ImGui D3D12");
+//    ImGuiIO &io = ImGui::GetIO();
+//    ImFont *font = io.Fonts->AddFontFromMemoryCompressedTTF(DROID_compressed_data, DROID_compressed_size, 18.0);
+//    if (font == nullptr) {
+//        spdlog::error("Failed to load Droid Sans.");
+//    }
+//    spdlog::info("Loaded Droid Sans font");
+
+//    ImGui::CreateContext();
+//    ImGui::StyleColorsDark();
+//    ImGuiStyle &st = ImGui::GetStyle();
+//    setup_style(st);
+
+    if (m_first_frame) {
+        m_first_frame = false;
+
+        spdlog::info("Starting game data initialization thread");
+
+        // Game specific initialization stuff
+        std::thread init_thread([this]() {
+            m_types = std::make_unique<RETypes>();
+            m_globals = std::make_unique<REGlobals>();
+            m_mods = std::make_unique<Mods>();
+
+            auto e = m_mods->on_initialize();
+
+            if (e) {
+                if (e->empty()) {
+                    m_error = "An unknown error has occurred.";
+                } else {
+                    m_error = *e;
+                }
+            }
+
+            m_game_data_initialized = true;
+        });
+
+        init_thread.detach();
+    }
+
+    return true;
+
+}
+
+void REFramework::draw_ui_dx12() {
+
+    spdlog::info("Draw UI");
+
+//    std::lock_guard _{m_input_mutex };
+
+//    if (!m_draw_ui) {
+//        spdlog::info("Ack Inpt");
+//        m_dinput_hook->acknowledge_input();
+//        ImGui::GetIO().MouseDrawCursor = false;
+//        return;
+//    }
+
+//    auto &io = ImGui::GetIO();
+//    if (io.WantCaptureKeyboard) {
+//        m_dinput_hook->ignore_input();
+//    } else {
+//        m_dinput_hook->acknowledge_input();
+//    }
+
+//    io.MouseDrawCursor = true;
+
+//    ImGui::SetNextWindowPos(ImVec2(500, 50), ImGuiCond_::ImGuiCond_Once);
+//    ImGui::SetNextWindowSize(ImVec2(400, 300), ImGuiCond_::ImGuiCond_Once);
+
+    ImGui::Begin("RE2 Speedrun Overlay", &m_draw_ui);
+    ImGui::Text("Menu Key: Insert");
+    spdlog::info("Before About Draw");
+
+    draw_about();
+
+    if (m_error.empty() && m_game_data_initialized) {
+        m_mods->on_draw_ui();
+    } else if (!m_game_data_initialized) {
+        ImGui::TextWrapped("REFramework is currently initializing...");
+    } else if (!m_error.empty()) {
+        ImGui::TextWrapped("REFramework error: %s", m_error.c_str());
+    }
+    spdlog::info("End Draw");
+
 }
