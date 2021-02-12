@@ -227,7 +227,7 @@ void Speedrun::draw_enemies(RopewayEnemyManager *enemy_manager, const bool draw_
                 if (ec == nullptr) break;
                 if (!utility::re_managed_object::is_managed_object(ec)) continue;
                 for (auto c = ec->childComponent; c != nullptr && c != ec; c = c->childComponent) {
-                    if (utility::re_managed_object::is_a(c, "HitPointController")) {
+                    if (utility::re_managed_object::is_a(c, game_namespace("HitPointController"))) {
                         hitpoint_controller = (REBehavior *) c;
                         break;
                     }
